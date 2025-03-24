@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.Contracts;
+using System.Linq.Expressions;
 using System.Text.Json;
 using MySqlConnector;
 
@@ -7,6 +9,7 @@ class ProjectTrackerApplication
 {
 
     MySqlCommand commandExecutor;
+    string currentProject;
     static void Main()
     {
         ProjectTrackerApplication app = new ProjectTrackerApplication();
@@ -17,12 +20,29 @@ class ProjectTrackerApplication
     public ProjectTrackerApplication()
     {
         commandExecutor = null;
+        currentProject = null;
     }
     void UserInterface()
-    { 
+    {
 
-        
-        
+
+        string[] projectTaskTracker = new string[]
+        {
+           " ****    ****     *****      *****  *****  *****  *****    *****  ****         *        *****  *     *  *****   ****     ** ",
+            "*    *  *    *   *     *       *    *     *         *        *   *    *       * *      *       *    *   *      *    *    **" ,
+            "*    *  *    *   *     *       *    *     *         *        *   *    *      *   *     *       *   *    *      *    *    **",
+            "*****   *****    *     *       *    ***   *         *        *   *****      *******    *       ****     ***    *****     **",
+            "*       *   *    *     *  *    *    *     *         *        *   *   *     *       *   *       *   *    *      *   *     **      ",
+            "*       *    *   *     *  *    *    *     *         *        *   *    *   *         *  *       *    *   *      *    *",
+            "*       *     *   *****    *****    *****  *****    *        *   *     * *           *  *****  *     *  *****  *     *   **\n"
+
+        };
+
+        foreach (string line in projectTaskTracker)
+        {
+            Console.WriteLine(line);
+        }
+
         //get connection info from appsetting.json
         string jsonText = File.ReadAllText(@"../../../appsetting.json");
 
@@ -121,26 +141,19 @@ class ProjectTrackerApplication
             commandExecutor = new MySqlCommand("", connection);
         }
 
-        Console.WriteLine("Connection to MySQL database was successful!\n\n\n");
-
-        string[] projectTaskTracker = new string[]
-        {
-           " ****    ****     *****      *****  *****  *****  *****    *****  ****         *        *****  *     *  *****   ****     ** ",
-            "*    *  *    *   *     *       *    *     *         *        *   *    *       * *      *       *    *   *      *    *    **" ,
-            "*    *  *    *   *     *       *    *     *         *        *   *    *      *   *     *       *   *    *      *    *    **",
-            "*****   *****    *     *       *    ***   *         *        *   *****      *******    *       ****     ***    *****     **",
-            "*       *   *    *     *  *    *    *     *         *        *   *   *     *       *   *       *   *    *      *   *     **      ", 
-            "*       *    *   *     *  *    *    *     *         *        *   *    *   *         *  *       *    *   *      *    *",
-            "*       *     *   *****    *****    *****  *****    *        *   *     * *           *  *****  *     *  *****  *     *   **\n\n\n"
-
-        };
-
-        foreach (string line in projectTaskTracker)
-        {
-            Console.WriteLine(line);
-        }
+        Console.WriteLine("Connection to MySQL database was successful!\n");
+        Console.WriteLine("Welcome to Project Tracker! Project Tracker is a neat tool used to\nmaintain tasks for various projects you may be working on.Type any\ncommand to begin\n");
         
         
+        string response = "";
+        while(!response.Equals("quit"))
+        {
+            displayHomeMenu();
+
+            Console.Write(">>> ");
+            response = Console.ReadLine().ToLower();
+
+        } 
 
         
     }
@@ -149,6 +162,22 @@ class ProjectTrackerApplication
     {
         Console.WriteLine(message);
         Environment.Exit(code);
+    }
+
+    public void displayHomeMenu()
+    {
+        Console.WriteLine("Home Commands:\n");
+        Console.WriteLine("Command                        Usage\n");
+        Console.WriteLine("list                           Lists all projects");
+        Console.WriteLine("list -a                        Lists all active projects");
+        Console.WriteLine("list -i                        Lists all inactive projects\n");
+        Console.WriteLine("enter    [project-name]        Enters the specified project");
+        Console.WriteLine("new      [project-name]        Creates a new project");
+        Console.WriteLine("del      [project-name]        Deletes the specified project");
+        Console.WriteLine("act      [project-name]        Marks the specified project as active");
+        Console.WriteLine("deact    [project-name]        Marks the specified project as inactive\n");
+        Console.WriteLine("quit                           quits\n");
+
     }
 }
 
