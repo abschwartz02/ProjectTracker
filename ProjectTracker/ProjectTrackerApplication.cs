@@ -95,12 +95,11 @@ class ProjectTrackerApplication
                     connection.ChangeDatabase(databaseName);
 
                     var commandExecutor = new MySqlCommand(@"CREATE TABLE projects(
-	                    id INT AUTO_INCREMENT,
                         name VARCHAR(20) NOT NULL,
-                        active BOOLEAN NOT NULL DEFAULT TRUE,
+                        status VARCHAR(8) NOT NULL DEFAULT 'ACTIVE',
                         description VARCHAR(500),
-                        deadline DATE,
-	                    PRIMARY KEY(id)
+                        deadline VARCHAR(10) DEFAULT 'NONE',
+	                    PRIMARY KEY(name)
                     );", connection);
 
 
@@ -111,7 +110,7 @@ class ProjectTrackerApplication
 	                    id INT AUTO_INCREMENT,
                         projectId INT NOT NULL,
                         name VARCHAR(20) NOT NULL,
-                        active BOOLEAN NOT NULL DEFAULT TRUE,
+                        status BOOLEAN NOT NULL DEFAULT TRUE,
                         description VARCHAR(500),
                         deadline DATE,
 	                    PRIMARY KEY(id)
@@ -143,16 +142,113 @@ class ProjectTrackerApplication
 
         Console.WriteLine("Connection to MySQL database was successful!\n");
         Console.WriteLine("Welcome to Project Tracker! Project Tracker is a neat tool used to\nmaintain tasks for various projects you may be working on.Type any\ncommand to begin\n");
-        
-        
+
+        Console.WriteLine("Enter \"help\" to view commands");
         string response = "";
         while(!response.Equals("quit"))
         {
-            displayHomeMenu();
-
+            
             Console.Write(">>> ");
             response = Console.ReadLine().ToLower();
 
+            switch (response)
+            {
+                case "help":
+                    displayHomeMenu();
+                    break;
+                case "list":
+                {
+                    commandExecutor.CommandText = "SELECT COUNT(*) FROM projects";
+                    var reader = commandExecutor.ExecuteReader();
+                    reader.Read();
+
+                    long numProjects = (long)reader.GetValue(0);
+                    reader.Close();
+                    if (numProjects == 0)
+                    {
+                        Console.WriteLine("No projects in the system");
+                    }
+                    else
+                    {
+                        commandExecutor.CommandText = "SELECT * FROM projects";
+                        reader = commandExecutor.ExecuteReader();
+                        Console.WriteLine("Project          Status         Due-Date\n");
+                        while (reader.Read())
+                        {
+                            //format whitespace later
+                            Console.WriteLine(reader.GetValue(0).ToString() + reader.GetValue(1).ToString() + reader.GetValue(3).ToString());
+                        }
+                        reader.Close();
+                        Console.WriteLine();
+                    }
+                    break;
+                }
+                         
+                case "list -a":
+                {
+                    commandExecutor.CommandText = "SELECT COUNT(*) FROM projects WHERE status = 'ACTIVE'";
+                    var reader = commandExecutor.ExecuteReader();
+                    reader.Read();
+
+                    long numProjects = (long)reader.GetValue(0);
+                    reader.Close();
+                    if (numProjects == 0)
+                    {
+                        Console.WriteLine("No active projects in the system");
+                    }
+                    else
+                    {
+                        commandExecutor.CommandText = "SELECT * FROM projects WHERE status = 'ACTIVE'";
+                        reader = commandExecutor.ExecuteReader();
+                        Console.WriteLine("Project          Status         Due-Date\n");
+                        while (reader.Read())
+                        {
+                            //format whitespace later
+                            Console.WriteLine(reader.GetValue(0).ToString() + reader.GetValue(1).ToString() + reader.GetValue(3).ToString());
+                        }
+                        reader.Close();
+                        Console.WriteLine();
+                    }
+                    break;
+                }
+                    
+                    
+                case "list -i":
+                    {
+                        commandExecutor.CommandText = "SELECT COUNT(*) FROM projects WHERE status = 'INACTIVE'";
+                        var reader = commandExecutor.ExecuteReader();
+                        reader.Read();
+
+                        long numProjects = (long)reader.GetValue(0);
+                        reader.Close();
+                        if (numProjects == 0)
+                        {
+                            Console.WriteLine("No inactive projects in the system");
+                        }
+                        else
+                        {
+                            commandExecutor.CommandText = "SELECT * FROM projects WHERE status = 'INACTIVE'";
+                            reader = commandExecutor.ExecuteReader();
+                            Console.WriteLine("Project          Status         Due-Date\n");
+                            while (reader.Read())
+                            {
+                                //format whitespace later
+                                Console.WriteLine(reader.GetValue(0).ToString() + reader.GetValue(1).ToString() + reader.GetValue(3).ToString());
+                            }
+                            reader.Close();
+                            Console.WriteLine();
+                        }
+                        break;
+                    }
+                    
+                case "quit":
+                    break;
+                default:
+                    Console.WriteLine("Invalid input");
+                    break;
+
+
+            }
         } 
 
         
@@ -179,12 +275,11 @@ class ProjectTrackerApplication
         Console.WriteLine("quit                           quits\n");
 
     }
+
+    
 }
 
 
-//MySqlConnection connection = new MySqlConnection(); 
-
-//;
 
 
 
