@@ -1,34 +1,46 @@
-﻿using System.Net;
-using ProjectTracker.Models;
+﻿using ProjectTracker.Models;
 using System.Text.Json;
 using System.Text;
-using System;
-using System.Runtime.CompilerServices;
-using System.ComponentModel;
+
 
 
 class ProjectTrackerApplication
 {
     
-    Dictionary<int, Project> projects;
+    Dictionary<string, Project> projects;
     int currentProject;
+    int maxProjectLength;
+    int maxActiveProjectLength;
+    int maxInactiveProjectLength;
     
     static void Main()
     {
-        ProjectTrackerApplication app = new ProjectTrackerApplication();
+        ProjectTrackerApplication app = null;
+        try
+        {
+            app = new ProjectTrackerApplication();
+            app.ProjectsUserInterface();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            Environment.Exit(1);
+        }
 
         
-        app.UserInterface();
         
     }
 
     public ProjectTrackerApplication()
     {
+        maxProjectLength = 0;
+        maxActiveProjectLength = 0;
+        maxInactiveProjectLength = 0;
         loadData();
         currentProject = -1;
        
     }
-    void UserInterface()
+    void ProjectsUserInterface()
     {
         AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
         Console.CancelKeyPress += (sender, e) =>
@@ -81,18 +93,88 @@ class ProjectTrackerApplication
                     displayHomeMenu();
                     break;
                 case "list":
-                    foreach (KeyValuePair<int, Project> entry in projects)
+                    if (projects.Count == 0)
                     {
-                        Project project = entry.Value;  
-                        Console.WriteLine(project.name + project.status + project.dueDate);
+                        Console.WriteLine("\nNo projects in the system\n");
                     }
+                    else
+                    {
+                        displayProjectList(true, true);
+                        foreach (KeyValuePair<string, Project> entry in projects)
+                        {
+                            Project project = entry.Value;
+                            string activeStatus = project.status ? "Active" : "Inactive";
+                            string result = String.Format("{0} {1} {2}", project.name.PadRight(maxProjectLength + 2), activeStatus.PadRight(9), project.dueDate.PadRight(0));
+                            Console.WriteLine(result);
+                        }
+                        Console.WriteLine();
+                    }
+                    
                     break;
                          
                 case "list -a":
-                    break; 
-                case "list -i":
-                    break;
+                    {
+                        bool menuPrinted = false;
+
+                        foreach (KeyValuePair<string, Project> entry in projects)
+                        {
+                            Project project = entry.Value;
+                            if (project.status)
+                            {
+                                if (!menuPrinted)
+                                {
+                                    displayProjectList(false, true);
+                                    menuPrinted = true;
+                                }
+                                string result = String.Format("{0} {1} {2}", project.name.PadRight(maxActiveProjectLength + 2), "Active".PadRight(7), project.dueDate.PadRight(0));
+                                Console.WriteLine(result);
+                            }
+
+                        }
+                        
+                        if (!menuPrinted)
+                        {
+                            Console.WriteLine("\nNo active projects in the system\n");
+                        }
+                        else
+                        {
+                            Console.WriteLine();
+                        }
+                        break;
+                    }
                     
+                case "list -i":
+                    {
+                        bool menuPrinted = false;
+
+                        
+                        foreach (KeyValuePair<string, Project> entry in projects)
+                        {
+                            Project project = entry.Value;
+                            if (!project.status)
+                            {
+                                if (!menuPrinted)
+                                {
+                                    displayProjectList(false, false);
+                                    menuPrinted = true;
+                                }
+                                string result = String.Format("{0} {1} {2}", project.name.PadRight(maxInactiveProjectLength + 2), "Inactive".PadRight(9), project.dueDate.PadRight(0));
+                                Console.WriteLine(result);
+                            }
+
+                        }
+                      
+
+                        if (!menuPrinted)
+                        {
+                            Console.WriteLine("\nNo inactive projects in the system\n");
+                        }
+                        else
+                        {
+                            Console.WriteLine();
+                        }
+                        break;
+                    }
                 case "quit": 
                     //do nothing
                     break;
@@ -131,7 +213,7 @@ class ProjectTrackerApplication
 
     public void loadData()
     {
-        projects = new Dictionary<int, Project>();
+        projects = new Dictionary<string, Project>();
 
         string jsonContent = File.ReadAllText("../../../ProjectData.json");
 
@@ -141,35 +223,38 @@ class ProjectTrackerApplication
 
         foreach (JsonElement projectElement in rootElement.EnumerateArray())
         {
-            int id = projectElement.GetProperty("projectId").GetInt32();
+            
             string name = projectElement.GetProperty("name").ToString();
             string description = projectElement.GetProperty("description").ToString();
             Boolean status = projectElement.GetProperty("status").GetBoolean();
             string dueDate = projectElement.GetProperty("dueDate").ToString();
 
-            Project newProject = new Project(id, name, description, status, dueDate);
+            if (nameExists(name)) { throw new Exception("Duplicate project names in ProjectData.json"); }
+            checkLength(name, status);
+
+            Project newProject = new Project(name, description, status, dueDate);
 
             JsonElement tasksElement = projectElement.GetProperty("tasks");
 
             foreach (JsonElement taskElement in tasksElement.EnumerateArray())
             {
                 int taskId = taskElement.GetProperty("id").GetInt32();
-                int projectId = taskElement.GetProperty("projectId").GetInt32();
+                string projectName = taskElement.GetProperty("projectName").ToString();
 
-                if (id != projectId) { fail("Invalid Json", 1); };
+                
 
                 string taskName = taskElement.GetProperty("name").ToString();
                 string taskDescription = taskElement.GetProperty("description").ToString();
                 Boolean taskStatus = taskElement.GetProperty("status").GetBoolean();
                 string taskDueDate = projectElement.GetProperty("dueDate").ToString();
 
-                ProjectTask newTask = new ProjectTask(taskId, projectId, taskName, taskStatus, taskDescription, taskDueDate);
+                ProjectTask newTask = new ProjectTask(taskId, projectName, taskName, taskStatus, taskDescription, taskDueDate);
                 newProject.tasks.Add(newTask.id, newTask);
 
 
             }
 
-            projects.Add(newProject.projectId, newProject);
+            projects.Add(newProject.name, newProject);
         }
 
     }
@@ -179,7 +264,7 @@ class ProjectTrackerApplication
         
         var jsonBuilder = new StringBuilder();
         jsonBuilder.AppendLine("[");
-        Dictionary<int, Project>.Enumerator projectEnum = projects.GetEnumerator();
+        Dictionary<string, Project>.Enumerator projectEnum = projects.GetEnumerator();
         projectEnum.MoveNext();
         for (int i = 0; i < projects.Count; i++)
         {
@@ -188,7 +273,7 @@ class ProjectTrackerApplication
             
             Dictionary<int, ProjectTask> tasks = myProject.tasks;
             jsonBuilder.AppendLine("  {");
-            jsonBuilder.AppendLine($"    \"projectId\": {myProject.projectId},");
+           
             jsonBuilder.AppendLine($"    \"name\": \"{myProject.name}\",");
             jsonBuilder.AppendLine($"    \"description\": \"{myProject.description}\",");
             jsonBuilder.AppendLine($"    \"status\": {myProject.status.ToString().ToLower()},");
@@ -202,7 +287,7 @@ class ProjectTrackerApplication
                 ProjectTask myTask = taskEnum.Current.Value;
                 jsonBuilder.AppendLine("      {");
                 jsonBuilder.AppendLine($"        \"id\": {myTask.id},");
-                jsonBuilder.AppendLine($"        \"projectId\": {myTask.projectId},");
+                jsonBuilder.AppendLine($"        \"projectName\": {myTask.projectName},");
                 jsonBuilder.AppendLine($"        \"status\": {myTask.status.ToString().ToLower()},");
                 jsonBuilder.AppendLine($"        \"name\": \"{myTask.name}\",");
                 jsonBuilder.AppendLine($"        \"description\": \"{myTask.description}\",");
@@ -246,14 +331,53 @@ class ProjectTrackerApplication
     }
 
      void OnProcessExit (object sender, EventArgs e)
-    {
+     {
         saveData();
+     }
+
+     void displayProjectList(bool all, bool active)
+     {
+        string result = "";
+
+        if (all)
+        {
+           result += String.Format("{0} {1} {2}", "\nName".PadRight(maxProjectLength + 3), "Status".PadRight(9), "Due-Date\n".PadRight(0));
+        }
+        
+        else if (active)
+        {
+            result += String.Format("{0} {1} {2}", "\nName".PadRight(maxActiveProjectLength + 3), "Status".PadRight(7), "Due-Date\n".PadRight(0));
+        }
+        else
+        {
+            result += result += String.Format("{0} {1} {2}", "\nName".PadRight(maxInactiveProjectLength + 3), "Status".PadRight(9), "Due-Date\n".PadRight(0));
+        }
+        
+        Console.WriteLine(result);
+     }
+
+    void checkLength(string name, bool status)
+    {
+        if (name.Length > maxProjectLength)
+        {
+            maxProjectLength = name.Length;
+        }
+
+        if (status && name.Length > maxActiveProjectLength)
+        {
+            maxActiveProjectLength = name.Length;
+        }
+
+        if (!status && name.Length > maxInactiveProjectLength)
+        {
+            maxInactiveProjectLength = name.Length;
+        }
+    }
+
+    public bool nameExists(string name)
+    {
+        return projects.ContainsKey(name);
     }
 
 }
-
-
-
-
-
 
