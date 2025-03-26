@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text;
 using System.Globalization;
+using System.ComponentModel.DataAnnotations;
 
 
 
@@ -125,7 +126,7 @@ class ProjectTrackerApplication
                             Console.WriteLine();
                         }
                     }
-                    else if (words.Length == 2 && words[1].Equals("-c"))
+                    else if (words.Length == 2 && words[1].ToLower().Equals("-c"))
                     {
                         bool menuPrinted = false;
 
@@ -155,7 +156,7 @@ class ProjectTrackerApplication
                         }
                         break;
                     }
-                    else if (words.Length == 2 && words[1].Equals("-i"))
+                    else if (words.Length == 2 && words[1].ToLower().Equals("-i"))
                     {
                         bool menuPrinted = false;
 
@@ -206,11 +207,11 @@ class ProjectTrackerApplication
 
                         if (projectName.Equals(""))
                         {
-                            Console.WriteLine("No project specified. Usage: del [project-name]");
+                            Console.WriteLine("\nNo project specified. Usage: del [project-name]\n");
                         }
                         else if (!nameExists(projectName))
                         {
-                            Console.WriteLine($"No project with name \"{projectName}\"");
+                            Console.WriteLine($"\nNo project with name \"{projectName}\"\n");
                         }
                         else
                         {
@@ -247,11 +248,11 @@ class ProjectTrackerApplication
 
                         if (projectName.Equals(""))
                         {
-                            Console.WriteLine("No project specified. Usage: new [project-name]");
+                            Console.WriteLine("\nNo project specified. Usage: new [project-name]\n");
                         }
                         else if (nameExists(projectName))
                         {
-                            Console.WriteLine($"Project with name \"{projectName}\" already exists");
+                            Console.WriteLine($"\nProject with name \"{projectName}\" already exsits\n");
                         }
                         else
                         {
@@ -265,6 +266,7 @@ class ProjectTrackerApplication
                             Project newProject = new Project(projectName, newDescription, false, newDueDate);
 
                             projects.Add(newProject.name, newProject);
+                            checkLength(newProject.name, newProject.status);
 
                             Console.WriteLine($"\n{newProject.name} has been created!\n");
 
@@ -286,11 +288,11 @@ class ProjectTrackerApplication
 
                         if (projectName.Equals(""))
                         {
-                            Console.WriteLine("No project specified. Usage: finished [project-name]");
+                            Console.WriteLine("\nNo project specified. Usage: finish [project-name]\n");
                         }
                         else if (!nameExists(projectName))
                         {
-                            Console.WriteLine($"No project with name \"{projectName}\"");
+                            Console.WriteLine($"\nNo project with name \"{projectName}\"\n");
                         }
                         else
                         {
@@ -313,16 +315,102 @@ class ProjectTrackerApplication
 
                         if (projectName.Equals(""))
                         {
-                            Console.WriteLine("No project specified. Usage: finished [project-name]");
+                            Console.WriteLine("\nNo project specified. Usage: unfinish [project-name]\n");
                         }
                         else if (!nameExists(projectName))
                         {
-                            Console.WriteLine($"No project with name \"{projectName}\"");
+                            Console.WriteLine($"\nNo project with name \"{projectName}\"\n");
                         }
                         else
                         {
                             projects.GetValueOrDefault(projectName).status = false;
                             Console.WriteLine($"\n{projectName} has been marked as incomplete\n");
+                        }
+                        break;
+                    }
+                case "edit":
+                    {
+                        if (words.Length == 1)
+                        {
+                            Console.WriteLine("No edit command specified\n\nUsage:\nedit name [project-name]\nedit date [project-date]\n");
+                        }
+                        else if (words[1].ToLower() == "name" || words[1].ToLower() == "date")
+                        {
+                            string projectName = "";
+                            for (int i = 2; i < words.Length; i++)
+                            {
+                                projectName += words[i];
+                                if (i != words.Length - 1)
+                                {
+                                    projectName += " ";
+                                }
+                            }
+
+                            if (words[1].ToLower() == "name" && projectName.Equals(""))
+                            {
+                                Console.WriteLine("\nNo project specified. Usage: edit name [project-name]\n");
+                            }
+                            else if (words[1].ToLower() == "date" && projectName.Equals(""))
+                            {
+                                Console.WriteLine("\nNo project specified. Usage: edit date [project-name]\n");
+                            }
+                            else if (!nameExists(projectName))
+                            {
+                                Console.WriteLine($"\nNo project with name \"{projectName}\"\n");
+                            }
+                            else
+                            {
+                                if (words[1] == "date")
+                                {
+                                    string newDate = getValidDate();
+
+                                    projects.GetValueOrDefault(projectName).dueDate = newDate;
+
+                                    Console.WriteLine($"\nDate for {projectName} has been updated to {newDate}\n");
+                                }
+                                else
+                                {
+                                    string newName = "";
+                                    Console.Write($"New name for {projectName}: ");
+                                    newName = Console.ReadLine();
+
+                                    while (newName == "" || nameExists(newName))
+                                    {
+                                        if (newName == "")
+                                        {
+                                            Console.WriteLine("Name cannot be empty");
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine($"\nProject with the name {newName} already exists\n");
+                                        }
+
+                                        Console.Write($"New name for {projectName}: ");
+                                        newName = Console.ReadLine();
+                                    }
+
+
+                                    Project p = projects.GetValueOrDefault(projectName);
+                                    p.name = newName;
+                                    foreach (KeyValuePair<int, ProjectTask> taskEntry in p.tasks)
+                                    {
+                                        ProjectTask task = taskEntry.Value;
+                                        task.projectName = newName;
+                                    }
+
+                                    projects.Add(newName, p);
+                                    projects.Remove(projectName);
+
+                                    Console.WriteLine($"\n{projectName} successfuly renamed to {newName}\n");
+
+                                }
+                                
+                                
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid command");
                         }
                         break;
                     }
@@ -356,8 +444,13 @@ class ProjectTrackerApplication
         
         Console.WriteLine("new [project-name]             Creates a new project");
         Console.WriteLine("del [project-name]             Deletes the specified project\n");
-        Console.WriteLine("finish [project-name]        Marks the specified project as complete");
-        Console.WriteLine("unfinish [project-name]      Marks the specified project as incomplete\n");
+
+        Console.WriteLine("finish [project-name]          Marks the specified project as complete");
+        Console.WriteLine("unfinish [project-name]        Marks the specified project as incomplete\n");
+
+        Console.WriteLine("edit name [project-name]       Marks the specified project as complete");
+        Console.WriteLine("edit date [project-name]       Marks the specified project as incomplete\n");
+
 
         Console.WriteLine("enter [project-name]           Enters the specified project");
         Console.WriteLine("quit                           Quits\n");
