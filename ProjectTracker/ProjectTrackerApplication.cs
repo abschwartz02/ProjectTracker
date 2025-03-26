@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text;
 using System.Globalization;
 using System.ComponentModel.DataAnnotations;
+using System.Transactions;
 
 
 
@@ -398,6 +399,8 @@ class ProjectTrackerApplication
                                         task.projectName = newName;
                                     }
 
+                                    checkLength(newName, p.status);
+
                                     projects.Add(newName, p);
                                     projects.Remove(projectName);
 
@@ -414,6 +417,34 @@ class ProjectTrackerApplication
                         }
                         break;
                     }
+                case "enter":
+                    {
+                        string projectName = "";
+                        for (int i = 1; i < words.Length; i++)
+                        {
+                            projectName += words[i];
+                            if (i != words.Length - 1)
+                            {
+                                projectName += " ";
+                            }
+                        }
+
+                        if (projectName.Equals(""))
+                        {
+                            Console.WriteLine("\nNo project specified. Usage: enter [project-name]\n");
+                        }
+                        else if (!nameExists(projectName))
+                        {
+                            Console.WriteLine($"\nNo project with name \"{projectName}\"\n");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"\nEntering {projectName}...");
+                            TaskUserInterface(projectName);
+                        }
+                        break;
+                    }
+                    
                 case "quit": 
                     //do nothing
                     break;
@@ -424,15 +455,56 @@ class ProjectTrackerApplication
 
             }
         } 
-
-        
     }
 
+    void TaskUserInterface(string projectName)
+    {
+        Console.WriteLine("Entered " + projectName +"\n");
+
+        Console.WriteLine("Enter \"help\" to view task commands\n");
+        string response = "";
+        while (!response.Equals("exit"))
+        {
+
+            response = "";
+            while (response != null && response.Equals(""))
+            {
+                Console.Write($"{projectName}>>> ");
+                response = Console.ReadLine();
+
+            }
+
+            if (response == null)
+            {
+                break;
+            }
+
+            string[] words = response.Split(" ");
+            string command = words[0].ToLower();
+
+            switch (command)
+            {
+                case "help":
+                    displayTaskMenu();
+                    break;
+                case "exit":
+                    break;
+                case "quit":
+                    Environment.Exit(0);
+                    break;
+                default:
+                    Console.WriteLine("Invalid command");
+                    break;
+            }
+        }
+    }
     public void fail(string message, int code)
     {
         Console.WriteLine(message);
         Environment.Exit(code);
     }
+
+    
 
     public void displayHomeMenu()
     {
@@ -441,18 +513,41 @@ class ProjectTrackerApplication
         Console.WriteLine("list                           Lists all projects");
         Console.WriteLine("list -c                        Lists all complete projects");
         Console.WriteLine("list -i                        Lists all incomplete projects\n");
-        
+
+        Console.WriteLine("view [project-name]            View a Summary of the specified proejct");
         Console.WriteLine("new [project-name]             Creates a new project");
         Console.WriteLine("del [project-name]             Deletes the specified project\n");
 
         Console.WriteLine("finish [project-name]          Marks the specified project as complete");
         Console.WriteLine("unfinish [project-name]        Marks the specified project as incomplete\n");
 
-        Console.WriteLine("edit name [project-name]       Marks the specified project as complete");
-        Console.WriteLine("edit date [project-name]       Marks the specified project as incomplete\n");
+        Console.WriteLine("edit name [project-name]       Edit the name of an existign project");
+        Console.WriteLine("edit date [project-name]       Edit the date of an existing project\n");
 
 
         Console.WriteLine("enter [project-name]           Enters the specified project");
+        Console.WriteLine("quit                           Quits\n");
+
+    }
+
+    public void displayTaskMenu()
+    {
+        Console.WriteLine("\nTask Commands:\n");
+        Console.WriteLine("Command                        Usage\n");
+        Console.WriteLine("list                           Lists all project tasks");
+        Console.WriteLine("list -c                        Lists all complete project tasks");
+        Console.WriteLine("list -i                        Lists all incomplete project tasks\n");
+
+        Console.WriteLine("new [task-id]                  Creates a new task");
+        Console.WriteLine("del [task-id]                  Deletes the specified tasks\n");
+
+        Console.WriteLine("finish [task-id]               Marks the specified tasks as complete");
+        Console.WriteLine("unfinish [task-id]             Marks the specified tasks as incomplete\n");
+
+        Console.WriteLine("edit name [task-id]            Edit the name of an existing task");
+        Console.WriteLine("edit date [task-id]            Edit the date of an existing task\n");
+
+        Console.WriteLine("exit                           Exits the current project");
         Console.WriteLine("quit                           Quits\n");
 
     }
