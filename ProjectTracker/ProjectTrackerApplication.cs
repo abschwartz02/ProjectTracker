@@ -1,6 +1,8 @@
 ﻿using ProjectTracker.Models;
 using System.Text.Json;
 using System.Text;
+using System.Runtime.InteropServices;
+using System.Globalization;
 
 
 
@@ -97,6 +99,11 @@ class ProjectTrackerApplication
             switch (command)
             {
                 case "help":
+                    if (words.Length != 1)
+                    {
+                        Console.WriteLine("Invalid command");
+                        break;
+                    }
                     displayHomeMenu();
                     break;
                 case "list":
@@ -182,7 +189,7 @@ class ProjectTrackerApplication
                     }
                     else
                     {
-                        Console.WriteLine("Invalid input");
+                        Console.WriteLine("Invalid command");
                     }
                     break;
 
@@ -198,7 +205,11 @@ class ProjectTrackerApplication
                             }
                         }
 
-                        if (!nameExists(projectName))
+                        if (projectName.Equals(""))
+                        {
+                            Console.WriteLine("No project specified. Usage: del [project-name]");
+                        }
+                        else if (!nameExists(projectName))
                         {
                             Console.WriteLine($"No project with name \"{projectName}\"");
                         }
@@ -223,12 +234,50 @@ class ProjectTrackerApplication
                         }
                         break;
                     }
-                    
+                case "new":
+                    {
+                        string projectName = "";
+                        for (int i = 1; i < words.Length; i++)
+                        {
+                            projectName += words[i];
+                            if (i != words.Length - 1)
+                            {
+                                projectName += " ";
+                            }
+                        }
+
+                        if (projectName.Equals(""))
+                        {
+                            Console.WriteLine("No project specified. Usage: new [project-name]");
+                        }
+                        else if (nameExists(projectName))
+                        {
+                            Console.WriteLine($"Project with name \"{projectName}\" already exists");
+                        }
+                        else
+                        {
+                            
+
+                            Console.Write("Project description (Optional. Enter to skip): ");
+                            string newDescription = Console.ReadLine();
+
+                            string newDueDate = getValidDate();
+
+                            Project newProject = new Project(projectName, newDescription, false, newDueDate);
+
+                            projects.Add(newProject.name, newProject);
+
+                            Console.WriteLine($"\n{newProject.name} has been created!\n");
+
+                        }
+
+                        break;
+                    }
                 case "quit": 
                     //do nothing
                     break;
                 default:
-                    Console.WriteLine("Invalid input");
+                    Console.WriteLine("Invalid command");
                     break;
 
 
@@ -246,16 +295,18 @@ class ProjectTrackerApplication
 
     public void displayHomeMenu()
     {
-        Console.WriteLine("Home Commands:\n");
+        Console.WriteLine("\nHome Commands:\n");
         Console.WriteLine("Command                        Usage\n");
         Console.WriteLine("list                           Lists all projects");
         Console.WriteLine("list -c                        Lists all complete projects");
         Console.WriteLine("list -i                        Lists all incomplete projects\n");
-        Console.WriteLine("enter [project-name]           Enters the specified project");
+        
         Console.WriteLine("new [project-name]             Creates a new project");
-        Console.WriteLine("del [project-name]             Deletes the specified project");
-        Console.WriteLine("act [project-name]             Marks the specified project as active");
-        Console.WriteLine("deact [project-name]           Marks the specified project as inactive\n");
+        Console.WriteLine("del [project-name]             Deletes the specified project\n");
+        Console.WriteLine("finished [project-name]        Marks the specified project as complete");
+        Console.WriteLine("unfinished [project-name]      Marks the specified project as incomplete\n");
+
+        Console.WriteLine("enter [project-name]           Enters the specified project");
         Console.WriteLine("quit                           Quits\n");
 
     }
@@ -428,5 +479,70 @@ class ProjectTrackerApplication
         return projects.ContainsKey(name);
     }
 
+    /*
+     * promts user until date is valid or ""
+     */
+    public string getValidDate()
+    {
+        bool validDate = false;
+        string[] formats = { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy" };
+        Console.Write("Project due-date mm/dd/yyyy (Optional. Enter to skip): ");
+  
+        string newDueDate = Console.ReadLine();
+
+        if (!newDueDate.Equals(""))
+        {
+            try
+            {
+                var dateTime = DateTime.ParseExact(newDueDate, formats, new CultureInfo("en-US"), DateTimeStyles.None);
+                if (!(dateTime.Date >= DateTime.Today))
+                {
+                    Console.WriteLine("Due-date cannot be in the past");
+                }
+                else
+                {
+                    validDate = true;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Invalid date");
+            }
+        }
+
+        while (!newDueDate.Equals("") && !validDate)
+        {
+            
+            Console.Write("Project due-date mm/dd/yyyy (Optional. Enter to skip): ");
+            newDueDate = Console.ReadLine();
+
+            try
+            {
+                var dateTime = DateTime.ParseExact(newDueDate, formats, new CultureInfo("en-US"), DateTimeStyles.None);
+                if (!(dateTime.Date >= DateTime.Today))
+                {
+                    Console.WriteLine("Due-date cannot be in the past");
+                }
+                else
+                {
+                    validDate = true;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Invalid date");
+            }
+        }
+
+        if (newDueDate.Equals(""))
+        {
+            return "None";
+        }
+        else
+        {
+            return newDueDate;
+        }
+        
+    }
 }
 
