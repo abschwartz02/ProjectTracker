@@ -7,7 +7,7 @@
     "tasks": [
       {
         "id": 101,
-        "projectName": 1,
+        "projectName": "Website Redesign",
         "status": false,
         "name": "Design Mockups",
         "description": "Create initial wireframes and design mockups.",
@@ -15,7 +15,7 @@
       },
       {
         "id": 102,
-        "projectName": 1,
+        "projectName": "Website Redesign",
         "status": false,
         "name": "Front-End Development",
         "description": "Implement the new design using React and Tailwind.",
@@ -23,7 +23,7 @@
       },
       {
         "id": 103,
-        "projectName": 1,
+        "projectName": "Website Redesign",
         "status": false,
         "name": "Testing and Deployment",
         "description": "Perform QA testing and deploy to production.",
@@ -39,7 +39,7 @@
     "tasks": [
       {
         "id": 201,
-        "projectName": 2,
+        "projectName": "Mobile App Development",
         "status": false,
         "name": "Backend API",
         "description": "Build RESTful API for the mobile app.",
@@ -47,7 +47,7 @@
       },
       {
         "id": 202,
-        "projectName": 2,
+        "projectName": "Mobile App Development",
         "status": false,
         "name": "UI/UX Design",
         "description": "Create user-friendly UI for the mobile app.",
@@ -55,7 +55,7 @@
       },
       {
         "id": 203,
-        "projectName": 2,
+        "projectName": "Mobile App Development",
         "status": false,
         "name": "Beta Testing",
         "description": "Conduct beta testing with real users.",
