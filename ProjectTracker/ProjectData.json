@@ -1,0 +1,68 @@
+[
+    {
+        "projectId": 1,
+        "name": "Website Redesign",
+        "description": "Redesign the company website for better UX and accessibility.",
+        "status": true,
+        "dueDate": "10/21/2024",
+        "tasks": [
+            {
+                "id": 101,
+                "projectId": 1,
+                "status": false,
+                "name": "Design Mockups",
+                "description": "Create initial wireframes and design mockups.",
+                "dueDate": "10/21/2024"
+            },
+            {
+                "id": 102,
+                "projectId": 1,
+                "status": false,
+                "name": "Front-End Development",
+                "description": "Implement the new design using React and Tailwind.",
+                "dueDate": "10/21/2024"
+            },
+            {
+                "id": 103,
+                "projectId": 1,
+                "status": false,
+                "name": "Testing and Deployment",
+                "description": "Perform QA testing and deploy to production.",
+                "dueDate": "10/21/2024"
+            }
+        ]
+    },
+  {
+    "projectId": 2,
+    "name": "Mobile App Development",
+    "description": "Develop a cross-platform mobile application.",
+    "status": false,
+    "dueDate": "10/21/2024",
+    "tasks": [
+      {
+        "id": 201,
+        "projectId": 2,
+        "status": false,
+        "name": "Backend API",
+        "description": "Build RESTful API for the mobile app.",
+        "dueDate": "10/21/2024"
+      },
+      {
+        "id": 202,
+        "projectId": 2,
+        "status": false,
+        "name": "UI/UX Design",
+        "description": "Create user-friendly UI for the mobile app.",
+        "dueDate": "10/21/2024"
+      },
+      {
+        "id": 203,
+        "projectId": 2,
+        "status": false,
+        "name": "Beta Testing",
+        "description": "Conduct beta testing with real users.",
+        "dueDate": "10/21/2024"
+      }
+    ]
+   }
+]
