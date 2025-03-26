@@ -120,7 +120,7 @@ class ProjectTrackerApplication
                             {
                                 Project project = entry.Value;
                                 string activeStatus = project.status ? "Complete" : "Incomplete";
-                                string result = String.Format("{0} {1} {2}", project.name.PadRight(maxProjectLength + 2), activeStatus.PadRight(11), project.dueDate.PadRight(0));
+                                string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxProjectLength + 2), activeStatus.PadRight(11), project.dueDate.PadRight(0), isLate(project.dueDate));
                                 Console.WriteLine(result);
                             }
                             Console.WriteLine();
@@ -140,7 +140,7 @@ class ProjectTrackerApplication
                                     displayProjectList(false, true);
                                     menuPrinted = true;
                                 }
-                                string result = String.Format("{0} {1} {2}", project.name.PadRight(maxActiveProjectLength + 2), "Complete".PadRight(9), project.dueDate.PadRight(0));
+                                string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxActiveProjectLength + 2), "Complete".PadRight(9), project.dueDate.PadRight(0), isLate(project.dueDate));
                                 Console.WriteLine(result);
                             }
 
@@ -171,7 +171,7 @@ class ProjectTrackerApplication
                                     displayProjectList(false, false);
                                     menuPrinted = true;
                                 }
-                                string result = String.Format("{0} {1} {2}", project.name.PadRight(maxInactiveProjectLength + 2), "Incomplete".PadRight(11), project.dueDate.PadRight(0));
+                                string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxInactiveProjectLength + 2), "Incomplete".PadRight(11), project.dueDate.PadRight(0), isLate(project.dueDate));
                                 Console.WriteLine(result);
                             }
 
@@ -544,5 +544,34 @@ class ProjectTrackerApplication
         }
         
     }
+
+    public string isLate(string date)
+    {
+        if (date == "None")
+        {
+            return "";
+        }
+        string[] formats = { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy" };
+
+        try
+        {
+            var dateTime = DateTime.ParseExact(date, formats, new CultureInfo("en-US"), DateTimeStyles.None);
+            if (!(dateTime.Date >= DateTime.Today))
+            {
+                return "(Past Due)";
+            }
+            else
+            {
+                return "";
+            }
+        }
+        catch (Exception e)
+        {
+            return "invalid date";
+        }
+
+    }
+
+
 }
 
