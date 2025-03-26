@@ -1,7 +1,6 @@
 ﻿using ProjectTracker.Models;
 using System.Text.Json;
 using System.Text;
-using System.Runtime.InteropServices;
 using System.Globalization;
 
 
@@ -120,7 +119,7 @@ class ProjectTrackerApplication
                             {
                                 Project project = entry.Value;
                                 string activeStatus = project.status ? "Complete" : "Incomplete";
-                                string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxProjectLength + 2), activeStatus.PadRight(11), project.dueDate.PadRight(0), isLate(project.dueDate));
+                                string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxProjectLength + 2), activeStatus.PadRight(11), project.dueDate.PadRight(0), isLate(project.status, project.dueDate));
                                 Console.WriteLine(result);
                             }
                             Console.WriteLine();
@@ -140,7 +139,7 @@ class ProjectTrackerApplication
                                     displayProjectList(false, true);
                                     menuPrinted = true;
                                 }
-                                string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxActiveProjectLength + 2), "Complete".PadRight(9), project.dueDate.PadRight(0), isLate(project.dueDate));
+                                string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxActiveProjectLength + 2), "Complete".PadRight(9), project.dueDate.PadRight(0), isLate(project.status, project.dueDate));
                                 Console.WriteLine(result);
                             }
 
@@ -171,7 +170,7 @@ class ProjectTrackerApplication
                                     displayProjectList(false, false);
                                     menuPrinted = true;
                                 }
-                                string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxInactiveProjectLength + 2), "Incomplete".PadRight(11), project.dueDate.PadRight(0), isLate(project.dueDate));
+                                string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxInactiveProjectLength + 2), "Incomplete".PadRight(11), project.dueDate.PadRight(0), isLate(project.status, project.dueDate));
                                 Console.WriteLine(result);
                             }
 
@@ -273,6 +272,60 @@ class ProjectTrackerApplication
 
                         break;
                     }
+                case "finish":
+                    {
+                        string projectName = "";
+                        for (int i = 1; i < words.Length; i++)
+                        {
+                            projectName += words[i];
+                            if (i != words.Length - 1)
+                            {
+                                projectName += " ";
+                            }
+                        }
+
+                        if (projectName.Equals(""))
+                        {
+                            Console.WriteLine("No project specified. Usage: finished [project-name]");
+                        }
+                        else if (!nameExists(projectName))
+                        {
+                            Console.WriteLine($"No project with name \"{projectName}\"");
+                        }
+                        else
+                        {
+                            projects.GetValueOrDefault(projectName).status = true;
+                            Console.WriteLine($"\n{projectName} has been marked as complete\n");
+                        }
+                        break;
+                    }
+                case "unfinish":
+                    {
+                        string projectName = "";
+                        for (int i = 1; i < words.Length; i++)
+                        {
+                            projectName += words[i];
+                            if (i != words.Length - 1)
+                            {
+                                projectName += " ";
+                            }
+                        }
+
+                        if (projectName.Equals(""))
+                        {
+                            Console.WriteLine("No project specified. Usage: finished [project-name]");
+                        }
+                        else if (!nameExists(projectName))
+                        {
+                            Console.WriteLine($"No project with name \"{projectName}\"");
+                        }
+                        else
+                        {
+                            projects.GetValueOrDefault(projectName).status = false;
+                            Console.WriteLine($"\n{projectName} has been marked as incomplete\n");
+                        }
+                        break;
+                    }
                 case "quit": 
                     //do nothing
                     break;
@@ -303,8 +356,8 @@ class ProjectTrackerApplication
         
         Console.WriteLine("new [project-name]             Creates a new project");
         Console.WriteLine("del [project-name]             Deletes the specified project\n");
-        Console.WriteLine("finished [project-name]        Marks the specified project as complete");
-        Console.WriteLine("unfinished [project-name]      Marks the specified project as incomplete\n");
+        Console.WriteLine("finish [project-name]        Marks the specified project as complete");
+        Console.WriteLine("unfinish [project-name]      Marks the specified project as incomplete\n");
 
         Console.WriteLine("enter [project-name]           Enters the specified project");
         Console.WriteLine("quit                           Quits\n");
@@ -545,9 +598,9 @@ class ProjectTrackerApplication
         
     }
 
-    public string isLate(string date)
+    public string isLate(bool finished, string date)
     {
-        if (date == "None")
+        if (finished || date == "None")
         {
             return "";
         }
