@@ -8,6 +8,8 @@
         public Boolean status { get; set; }
         public string description { get; set; }
         public string dueDate { get; set; }
+
+       
         public ProjectTask(int id, string projectName, string name, Boolean status, string description, string dueDate)
         {
             this.id = id;
@@ -16,6 +18,10 @@
             this.status = status;
             this.description = description;
             this.dueDate = dueDate;
+
+             
         }
+
+
     }
 }

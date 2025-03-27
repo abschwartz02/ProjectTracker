@@ -4,9 +4,10 @@
     "description": "Develop a cross-platform mobile application.",
     "status": false,
     "dueDate": "10/21/2024",
+    "taskCount": 3,
     "tasks": [
       {
-        "id": 201,
+        "id": 1,
         "projectName": "Mobile App Development",
         "status": false,
         "name": "Backend API",
@@ -14,7 +15,7 @@
         "dueDate": "10/21/2024"
       },
       {
-        "id": 202,
+        "id": 2,
         "projectName": "Mobile App Development",
         "status": false,
         "name": "UI/UX Design",
@@ -22,9 +23,9 @@
         "dueDate": "10/21/2024"
       },
       {
-        "id": 203,
+        "id": 3,
         "projectName": "Mobile App Development",
-        "status": false,
+        "status": true,
         "name": "Beta Testing",
         "description": "Conduct beta testing with real users.",
         "dueDate": "10/21/2024"
@@ -36,9 +37,10 @@
     "description": "Redesign the company website for better UX and accessibility.",
     "status": true,
     "dueDate": "10/21/2024",
+    "taskCount": 4,
     "tasks": [
       {
-        "id": 101,
+        "id": 1,
         "projectName": "New Project Name",
         "status": false,
         "name": "Design Mockups",
@@ -46,7 +48,7 @@
         "dueDate": "10/21/2024"
       },
       {
-        "id": 102,
+        "id": 2,
         "projectName": "New Project Name",
         "status": false,
         "name": "Front-End Development",
@@ -54,13 +56,22 @@
         "dueDate": "10/21/2024"
       },
       {
-        "id": 103,
+        "id": 4,
         "projectName": "New Project Name",
         "status": false,
         "name": "Testing and Deployment",
         "description": "Perform QA testing and deploy to production.",
         "dueDate": "10/21/2024"
       }
+    ]
+   },
+  {
+    "name": "SpecialProject",
+    "description": "",
+    "status": false,
+    "dueDate": "None",
+    "taskCount": 0,
+    "tasks": [
     ]
    }
 ]

@@ -11,7 +11,6 @@ class ProjectTrackerApplication
 {
     
     Dictionary<string, Project> projects;
-    int currentProject;
     int maxProjectLength;
     int maxActiveProjectLength;
     int maxInactiveProjectLength;
@@ -40,7 +39,6 @@ class ProjectTrackerApplication
         maxActiveProjectLength = 0;
         maxInactiveProjectLength = 0;
         loadData();
-        currentProject = -1;
        
     }
     void ProjectsUserInterface()
@@ -120,7 +118,7 @@ class ProjectTrackerApplication
                         }
                         else
                         {
-                            displayProjectList(true, true);
+                            displayProjectListHeaders(true, true);
                             foreach (KeyValuePair<string, Project> entry in projects)
                             {
                                 Project project = entry.Value;
@@ -142,7 +140,7 @@ class ProjectTrackerApplication
                             {
                                 if (!menuPrinted)
                                 {
-                                    displayProjectList(false, true);
+                                    displayProjectListHeaders(false, true);
                                     menuPrinted = true;
                                 }
                                 string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxActiveProjectLength + 2), "Complete".PadRight(9), project.dueDate.PadRight(0), isLate(project.status, project.dueDate));
@@ -173,7 +171,7 @@ class ProjectTrackerApplication
                             {
                                 if (!menuPrinted)
                                 {
-                                    displayProjectList(false, false);
+                                    displayProjectListHeaders(false, false);
                                     menuPrinted = true;
                                 }
                                 string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxInactiveProjectLength + 2), "Incomplete".PadRight(11), project.dueDate.PadRight(0), isLate(project.status, project.dueDate));
@@ -268,7 +266,7 @@ class ProjectTrackerApplication
 
                             string newDueDate = getValidDate();
 
-                            Project newProject = new Project(projectName, newDescription, false, newDueDate);
+                            Project newProject = new Project(projectName, newDescription, false, newDueDate, 0);
 
                             projects.Add(newProject.name, newProject);
                             checkLength(newProject.name, newProject.status);
@@ -443,7 +441,7 @@ class ProjectTrackerApplication
                         }
                         else
                         {
-                            Console.WriteLine($"\nEntering {projectName}...");
+                           
                             TaskUserInterface(projectName);
                         }
                         break;
@@ -467,6 +465,7 @@ class ProjectTrackerApplication
 
         Console.WriteLine("Enter \"help\" to view task commands\n");
         string response = "";
+        Project currentProject = projects.GetValueOrDefault(projectName);
         while (!response.Equals("exit"))
         {
 
@@ -490,6 +489,92 @@ class ProjectTrackerApplication
             {
                 case "help":
                     displayTaskMenu();
+                    break;
+                case "list":
+                    if (words.Length == 1)
+                    {
+                        if (currentProject.tasks.Count == 0)
+                        {
+                            Console.WriteLine("\nNo tasks for this project\n");
+                        }
+                        else
+                        {
+                            displayTaskListHeaders(true, true, currentProject);
+                            foreach (KeyValuePair<int, ProjectTask> entry in currentProject.tasks)
+                            {
+                                ProjectTask projectTask = entry.Value;
+                                string activeStatus = projectTask.status ? "Complete" : "Incomplete";
+                                string result = String.Format("{0} {1} {2} {3} {4}",projectTask.id.ToString().PadRight(4), projectTask.name.PadRight(currentProject.maxTaskLength + 2), activeStatus.PadRight(11), projectTask.dueDate.PadRight(0), isLate(projectTask.status, projectTask.dueDate));
+                                Console.WriteLine(result);
+                            }
+                            Console.WriteLine();
+                        }
+                    }
+                    else if (words.Length == 2 && words[1].ToLower().Equals("-c"))
+                    {
+                        bool menuPrinted = false;
+
+                        foreach (KeyValuePair<int, ProjectTask> entry in currentProject.tasks)
+                        {
+                            ProjectTask projectTask = entry.Value;
+                            if (projectTask.status)
+                            {
+                                if (!menuPrinted)
+                                {
+                                    displayTaskListHeaders(false, true, currentProject);
+                                    menuPrinted = true;
+                                }
+                                string result = String.Format("{0} {1} {2} {3} {4}", projectTask.id.ToString().PadRight(4), projectTask.name.PadRight(currentProject.maxActiveTaskLength + 2), "Complete".PadRight(9), projectTask.dueDate.PadRight(0), isLate(projectTask.status, projectTask.dueDate));
+                                Console.WriteLine(result);
+                            }
+
+                        }
+
+                        if (!menuPrinted)
+                        {
+                            Console.WriteLine("\nNo complete tasks for this project\n");
+                        }
+                        else
+                        {
+                            Console.WriteLine();
+                        }
+                        break;
+                    }
+                    else if (words.Length == 2 && words[1].ToLower().Equals("-i"))
+                    {
+                        bool menuPrinted = false;
+
+
+                        foreach (KeyValuePair<int, ProjectTask> entry in currentProject.tasks)
+                        {
+                            ProjectTask projectTask = entry.Value;
+                            if (!projectTask.status)
+                            {
+                                if (!menuPrinted)
+                                {
+                                    displayTaskListHeaders(false, false, currentProject);
+                                    menuPrinted = true;
+                                }
+                                string result = String.Format("{0} {1} {2} {3} {4}", projectTask.id.ToString().PadRight(4), projectTask.name.PadRight(currentProject.maxInactiveTaskLength + 2), "Incomplete".PadRight(11), projectTask.dueDate.PadRight(0), isLate(projectTask.status, projectTask.dueDate));
+                                Console.WriteLine(result);
+                            }
+
+                        }
+
+
+                        if (!menuPrinted)
+                        {
+                            Console.WriteLine("\nNo incomplete tasks for this project\n");
+                        }
+                        else
+                        {
+                            Console.WriteLine();
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid command");
+                    }
                     break;
                 case "exit":
                     break;
@@ -585,11 +670,12 @@ class ProjectTrackerApplication
             string description = projectElement.GetProperty("description").ToString();
             Boolean status = projectElement.GetProperty("status").GetBoolean();
             string dueDate = projectElement.GetProperty("dueDate").ToString();
+            int taskCount = projectElement.GetProperty("taskCount").GetInt32();
 
             if (nameExists(name)) { throw new Exception("Duplicate project names in ProjectData.json"); }
             checkLength(name, status);
 
-            Project newProject = new Project(name, description, status, dueDate);
+            Project newProject = new Project(name, description, status, dueDate, taskCount);
 
             JsonElement tasksElement = projectElement.GetProperty("tasks");
 
@@ -606,7 +692,8 @@ class ProjectTrackerApplication
                 string taskDueDate = projectElement.GetProperty("dueDate").ToString();
 
                 ProjectTask newTask = new ProjectTask(taskId, projectName, taskName, taskStatus, taskDescription, taskDueDate);
-                newProject.tasks.Add(newTask.id, newTask);
+                newProject.addTask(newTask);
+                
 
 
             }
@@ -635,6 +722,7 @@ class ProjectTrackerApplication
             jsonBuilder.AppendLine($"    \"description\": \"{myProject.description}\",");
             jsonBuilder.AppendLine($"    \"status\": {myProject.status.ToString().ToLower()},");
             jsonBuilder.AppendLine($"    \"dueDate\": \"{myProject.dueDate}\",");
+            jsonBuilder.AppendLine($"    \"taskCount\": {myProject.taskCount},");
             jsonBuilder.AppendLine($"    \"tasks\": [");
 
             Dictionary<int, ProjectTask>.Enumerator taskEnum = myProject.tasks.GetEnumerator();
@@ -692,7 +780,7 @@ class ProjectTrackerApplication
         saveData();
      }
 
-     void displayProjectList(bool all, bool active)
+     void displayProjectListHeaders(bool all, bool active)
      {
         string result = "";
 
@@ -707,11 +795,32 @@ class ProjectTrackerApplication
         }
         else
         {
-            result += result += String.Format("{0} {1} {2}", "\nName".PadRight(maxInactiveProjectLength + 3), "Status".PadRight(11), "Due-Date\n".PadRight(0));
+            result += String.Format("{0} {1} {2}", "\nName".PadRight(maxInactiveProjectLength + 3), "Status".PadRight(11), "Due-Date\n".PadRight(0));
         }
         
         Console.WriteLine(result);
      }
+
+    void displayTaskListHeaders(bool all, bool active, Project current)
+    {
+        string result = "";
+
+        if (all)
+        {
+            result += String.Format("{0} {1} {2} {3}", "\nID#".PadRight(5), "Name".PadRight(current.maxTaskLength + 2), "Status".PadRight(11), "Due-Date\n".PadRight(0));
+        }
+
+        else if (active)
+        {
+            result += String.Format("{0} {1} {2} {3}", "\nID#".PadRight(5), "Name".PadRight(current.maxActiveTaskLength + 2), "Status".PadRight(9), "Due-Date\n".PadRight(0));
+        }
+        else
+        {
+            result += String.Format("{0} {1} {2} {3}", "\nID#".PadRight(5), "Name".PadRight(current.maxInactiveTaskLength + 2), "Status".PadRight(11), "Due-Date\n".PadRight(0));
+        }
+
+        Console.WriteLine(result);
+    }
 
     void checkLength(string name, bool status)
     {
