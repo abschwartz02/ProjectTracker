@@ -76,7 +76,7 @@ class ProjectTrackerApplication
         
         Console.WriteLine("Welcome to Project Tracker! Project Tracker is a neat tool used to\nmaintain tasks for various projects you may be working on.Type any\ncommand to begin\n");
 
-        Console.WriteLine("Enter \"help\" to view commands");
+        Console.WriteLine("Enter \"help\" to view home commands");
         string response = "";
         while(!response.Equals("quit"))
         {
@@ -94,7 +94,11 @@ class ProjectTrackerApplication
                 break;
             }
 
+            response = response.Trim();
             string[] words = response.Split(" ");
+            
+            
+            
             string command = words[0].ToLower();
 
             switch (command)
@@ -102,7 +106,7 @@ class ProjectTrackerApplication
                 case "help":
                     if (words.Length != 1)
                     {
-                        Console.WriteLine("Invalid command");
+                        Console.WriteLine("\nInvalid command\n");
                         break;
                     }
                     displayHomeMenu();
@@ -217,12 +221,12 @@ class ProjectTrackerApplication
                         else
                         {
                             Console.Write($"Are you sure you wish to delete {projectName}? (y/n): ");
-                            string deleteResponse = Console.ReadLine().ToLower();
+                            string deleteResponse = Console.ReadLine().ToLower().Trim();
                             while (!deleteResponse.Equals("y") && !deleteResponse.Equals("yes") && !deleteResponse.Equals("n") && !deleteResponse.Equals("no"))
                             {
                                 Console.WriteLine("Invalid input");
                                 Console.Write($"Are you sure you wish to delete {projectName}? (y/n): ");
-                                deleteResponse = Console.ReadLine().ToLower();
+                                deleteResponse = Console.ReadLine().ToLower().Trim();
                             }
 
                             if (deleteResponse.Contains("y"))
@@ -260,7 +264,7 @@ class ProjectTrackerApplication
                             
 
                             Console.Write("Project description (Optional. Enter to skip): ");
-                            string newDescription = Console.ReadLine();
+                            string newDescription = Console.ReadLine().Trim();
 
                             string newDueDate = getValidDate();
 
@@ -373,7 +377,7 @@ class ProjectTrackerApplication
                                 {
                                     string newName = "";
                                     Console.Write($"New name for {projectName}: ");
-                                    newName = Console.ReadLine();
+                                    newName = Console.ReadLine().Trim();
 
                                     while (newName == "" || nameExists(newName))
                                     {
@@ -387,7 +391,7 @@ class ProjectTrackerApplication
                                         }
 
                                         Console.Write($"New name for {projectName}: ");
-                                        newName = Console.ReadLine();
+                                        newName = Console.ReadLine().Trim();
                                     }
 
 
@@ -449,7 +453,7 @@ class ProjectTrackerApplication
                     //do nothing
                     break;
                 default:
-                    Console.WriteLine("Invalid command");
+                    Console.WriteLine("\nInvalid command\nEnter \"help\" to view home commands\n");
                     break;
 
 
@@ -470,7 +474,7 @@ class ProjectTrackerApplication
             while (response != null && response.Equals(""))
             {
                 Console.Write($"{projectName}>>> ");
-                response = Console.ReadLine();
+                response = Console.ReadLine().Trim();
 
             }
 
@@ -493,7 +497,7 @@ class ProjectTrackerApplication
                     Environment.Exit(0);
                     break;
                 default:
-                    Console.WriteLine("Invalid command");
+                    Console.WriteLine("\nInvalid command\nEnter \"help\" to view task commands\n");
                     break;
             }
         }
@@ -509,46 +513,58 @@ class ProjectTrackerApplication
     public void displayHomeMenu()
     {
         Console.WriteLine("\nHome Commands:\n");
-        Console.WriteLine("Command                        Usage\n");
-        Console.WriteLine("list                           Lists all projects");
-        Console.WriteLine("list -c                        Lists all complete projects");
-        Console.WriteLine("list -i                        Lists all incomplete projects\n");
+        Console.WriteLine("____________________________________________________________________________ ");
+        Console.WriteLine("| Command                      | Usage                                     |");
+        Console.WriteLine("|______________________________|___________________________________________|");
+        Console.WriteLine("|                              |                                           |");
+        Console.WriteLine("| list                         | Lists all projects                        |");
+        Console.WriteLine("| list -c                      | Lists all complete projects               |");
+        Console.WriteLine("| list -i                      | Lists all incomplete projects             |");
+        Console.WriteLine("|                              |                                           |");
+        Console.WriteLine("| view [project-name]          | View a summary of the specified proejct   |");
+        Console.WriteLine("| new [project-name]           | Creates a new project                     |");
+        Console.WriteLine("| del [project-name]           | Deletes the specified project             |");
+        Console.WriteLine("|                              |                                           |");
+        Console.WriteLine("| finish [project-name]        | Marks the specified project as complete   |");
+        Console.WriteLine("| unfinish [project-name]      | Marks the specified project as incomplete |");
+        Console.WriteLine("|                              |                                           |");
+        Console.WriteLine("| edit name [project-name]     | Edit the name of an existign project      |");
+        Console.WriteLine("| edit date [project-name]     | Edit the date of an existing project      |");
+        Console.WriteLine("|                              |                                           |");
+        Console.WriteLine("| enter [project-name]         | Enters the specified project              |");
+        Console.WriteLine("| quit                         | Quits                                     |");
+        Console.WriteLine("|______________________________|___________________________________________|\n");
 
-        Console.WriteLine("view [project-name]            View a Summary of the specified proejct");
-        Console.WriteLine("new [project-name]             Creates a new project");
-        Console.WriteLine("del [project-name]             Deletes the specified project\n");
-
-        Console.WriteLine("finish [project-name]          Marks the specified project as complete");
-        Console.WriteLine("unfinish [project-name]        Marks the specified project as incomplete\n");
-
-        Console.WriteLine("edit name [project-name]       Edit the name of an existign project");
-        Console.WriteLine("edit date [project-name]       Edit the date of an existing project\n");
-
-
-        Console.WriteLine("enter [project-name]           Enters the specified project");
-        Console.WriteLine("quit                           Quits\n");
 
     }
 
     public void displayTaskMenu()
     {
+
         Console.WriteLine("\nTask Commands:\n");
-        Console.WriteLine("Command                        Usage\n");
-        Console.WriteLine("list                           Lists all project tasks");
-        Console.WriteLine("list -c                        Lists all complete project tasks");
-        Console.WriteLine("list -i                        Lists all incomplete project tasks\n");
+        Console.WriteLine("____________________________________________________________________________ ");
+        Console.WriteLine("| Command                      | Usage                                     |");
+        Console.WriteLine("|______________________________|___________________________________________|");
+        Console.WriteLine("|                              |                                           |");
+        Console.WriteLine("| list                         | Lists all projects tasks                  |");
+        Console.WriteLine("| list -c                      | Lists all complete projects tasks         |");
+        Console.WriteLine("| list -i                      | Lists all incomplete projects tasks       |");
+        Console.WriteLine("|                              |                                           |");
+        Console.WriteLine("| new [task-id]                | Creates a new task                        |");
+        Console.WriteLine("| del [task-id]                | Deletes the specified task                |");
+        Console.WriteLine("|                              |                                           |");
+        Console.WriteLine("| finish [task-id]             | Marks the specified task as complete      |");
+        Console.WriteLine("| unfinish [task-id]           | Marks the specified task as incomplete    |");
+        Console.WriteLine("|                              |                                           |");
+        Console.WriteLine("| edit name [task-id]          | Edit the name of an existign task         |");
+        Console.WriteLine("| edit date [task-id]          | Edit the date of an existing task         |");
+        Console.WriteLine("|                              |                                           |");
+        Console.WriteLine("| exit                         | Exits the current project                 |");
+        Console.WriteLine("| quit                         | Quits                                     |");
+        Console.WriteLine("|______________________________|___________________________________________|\n");
 
-        Console.WriteLine("new [task-id]                  Creates a new task");
-        Console.WriteLine("del [task-id]                  Deletes the specified tasks\n");
 
-        Console.WriteLine("finish [task-id]               Marks the specified tasks as complete");
-        Console.WriteLine("unfinish [task-id]             Marks the specified tasks as incomplete\n");
-
-        Console.WriteLine("edit name [task-id]            Edit the name of an existing task");
-        Console.WriteLine("edit date [task-id]            Edit the date of an existing task\n");
-
-        Console.WriteLine("exit                           Exits the current project");
-        Console.WriteLine("quit                           Quits\n");
+       
 
     }
 
@@ -729,7 +745,7 @@ class ProjectTrackerApplication
         string[] formats = { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy" };
         Console.Write("Project due-date mm/dd/yyyy (Optional. Enter to skip): ");
   
-        string newDueDate = Console.ReadLine();
+        string newDueDate = Console.ReadLine().Trim();
 
         if (!newDueDate.Equals(""))
         {
@@ -755,7 +771,7 @@ class ProjectTrackerApplication
         {
             
             Console.Write("Project due-date mm/dd/yyyy (Optional. Enter to skip): ");
-            newDueDate = Console.ReadLine();
+            newDueDate = Console.ReadLine().Trim();
 
             try
             {
