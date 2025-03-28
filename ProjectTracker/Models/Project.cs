@@ -54,6 +54,37 @@ namespace ProjectTracker.Models
             }
         }
 
+        public int numComplete()
+        {
+            int complete = 0;
+            foreach (KeyValuePair<int, ProjectTask> task in tasks)
+            {
+                if (task.Value.status)
+                {
+                    complete++;
+                }
+            }
 
+            return complete;
+
+
+        }
+
+
+        public int numIncomplete()
+        {
+            int complete = 0;
+            foreach (KeyValuePair<int, ProjectTask> task in tasks)
+            {
+                if (!task.Value.status)
+                {
+                    complete++;
+                }
+            }
+
+            return complete;
+
+
+        }
     }
 }

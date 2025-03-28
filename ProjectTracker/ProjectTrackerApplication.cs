@@ -219,12 +219,26 @@ class ProjectTrackerApplication
                         else
                         {
                             Console.Write($"Are you sure you wish to delete {projectName}? (y/n): ");
-                            string deleteResponse = Console.ReadLine().ToLower().Trim();
-                            while (!deleteResponse.Equals("y") && !deleteResponse.Equals("yes") && !deleteResponse.Equals("n") && !deleteResponse.Equals("no"))
+                            string deleteResponse = Console.ReadLine();
+                            if (deleteResponse == null)
                             {
+                                Environment.Exit(0);
+                                break;
+                            }
+
+                            deleteResponse = deleteResponse.ToLower().Trim();
+                            while (!(deleteResponse == null) &&!deleteResponse.Equals("y") && !deleteResponse.Equals("yes") && !deleteResponse.Equals("n") && !deleteResponse.Equals("no"))
+                            {
+                                deleteResponse = deleteResponse.ToLower().Trim();
                                 Console.WriteLine("Invalid input");
                                 Console.Write($"Are you sure you wish to delete {projectName}? (y/n): ");
-                                deleteResponse = Console.ReadLine().ToLower().Trim();
+                                deleteResponse = Console.ReadLine();
+                            }
+
+                            if (deleteResponse == null)
+                            {
+                                Environment.Exit(0);
+                                break;
                             }
 
                             if (deleteResponse.Contains("y"))
@@ -262,7 +276,14 @@ class ProjectTrackerApplication
                             
 
                             Console.Write("Project description (Optional. Enter to skip): ");
-                            string newDescription = Console.ReadLine().Trim();
+                            string newDescription = Console.ReadLine();
+
+                            if (newDescription == null)
+                            {
+                                Environment.Exit(0);
+                                break;
+                            }
+                            newDescription = newDescription.Trim();
 
                             string newDueDate = getValidDate();
 
@@ -300,6 +321,7 @@ class ProjectTrackerApplication
                         else
                         {
                             projects.GetValueOrDefault(projectName).status = true;
+                            checkLength(projectName, true);
                             Console.WriteLine($"\n{projectName} has been marked as complete\n");
                         }
                         break;
@@ -327,6 +349,7 @@ class ProjectTrackerApplication
                         else
                         {
                             projects.GetValueOrDefault(projectName).status = false;
+                            checkLength(projectName, false);
                             Console.WriteLine($"\n{projectName} has been marked as incomplete\n");
                         }
                         break;
@@ -375,8 +398,14 @@ class ProjectTrackerApplication
                                 {
                                     string newName = "";
                                     Console.Write($"New name for {projectName}: ");
-                                    newName = Console.ReadLine().Trim();
+                                    newName = Console.ReadLine();
 
+                                    if (newName == null)
+                                    {
+                                        Environment.Exit(0);
+                                    }
+
+                                    newName = newName.Trim();
                                     while (newName == "" || nameExists(newName))
                                     {
                                         if (newName == "")
@@ -389,7 +418,13 @@ class ProjectTrackerApplication
                                         }
 
                                         Console.Write($"New name for {projectName}: ");
-                                        newName = Console.ReadLine().Trim();
+                                        newName = Console.ReadLine();
+
+                                        if (newName == null)
+                                        {
+                                            Environment.Exit(0);
+                                        }
+                                        newName = newName.Trim();
                                     }
 
 
@@ -446,7 +481,32 @@ class ProjectTrackerApplication
                         }
                         break;
                     }
-                    
+                case "view":
+                    {
+                        string projectName = "";
+                        for (int i = 1; i < words.Length; i++)
+                        {
+                            projectName += words[i];
+                            if (i != words.Length - 1)
+                            {
+                                projectName += " ";
+                            }
+                        }
+
+                        if (projectName.Equals(""))
+                        {
+                            Console.WriteLine("\nNo project specified. Usage: view [project-name]\n");
+                        }
+                        else if (!nameExists(projectName))
+                        {
+                            Console.WriteLine($"\nNo project with name \"{projectName}\"\n");
+                        }
+                        else
+                        {
+                            DisplayProjectInfo(projectName);
+                        }
+                        break;
+                    } 
                 case "quit": 
                     //do nothing
                     break;
@@ -473,15 +533,16 @@ class ProjectTrackerApplication
             while (response != null && response.Equals(""))
             {
                 Console.Write($"{projectName}>>> ");
-                response = Console.ReadLine().Trim();
+                response = Console.ReadLine();
 
             }
 
             if (response == null)
             {
-                break;
+                Environment.Exit(0);
             }
 
+            response = response.Trim();
             string[] words = response.Split(" ");
             string command = words[0].ToLower();
 
@@ -635,7 +696,7 @@ class ProjectTrackerApplication
         Console.WriteLine("| list -c                      | Lists all complete projects tasks         |");
         Console.WriteLine("| list -i                      | Lists all incomplete projects tasks       |");
         Console.WriteLine("|                              |                                           |");
-        Console.WriteLine("| new [task-id]                | Creates a new task                        |");
+        Console.WriteLine("| new [task-name]              | Creates a new task                        |");
         Console.WriteLine("| del [task-id]                | Deletes the specified task                |");
         Console.WriteLine("|                              |                                           |");
         Console.WriteLine("| finish [task-id]             | Marks the specified task as complete      |");
@@ -854,7 +915,14 @@ class ProjectTrackerApplication
         string[] formats = { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy" };
         Console.Write("Project due-date mm/dd/yyyy (Optional. Enter to skip): ");
   
-        string newDueDate = Console.ReadLine().Trim();
+        string newDueDate = Console.ReadLine();
+
+        if (newDueDate == null)
+        {
+            Environment.Exit(0);
+        }
+
+        newDueDate = newDueDate.Trim();
 
         if (!newDueDate.Equals(""))
         {
@@ -880,8 +948,14 @@ class ProjectTrackerApplication
         {
             
             Console.Write("Project due-date mm/dd/yyyy (Optional. Enter to skip): ");
-            newDueDate = Console.ReadLine().Trim();
+            newDueDate = Console.ReadLine();
 
+            if (newDueDate == null)
+            {
+                Environment.Exit(0);
+            }
+
+            newDueDate = newDueDate.Trim();
             try
             {
                 var dateTime = DateTime.ParseExact(newDueDate, formats, new CultureInfo("en-US"), DateTimeStyles.None);
@@ -935,9 +1009,22 @@ class ProjectTrackerApplication
         {
             return "invalid date";
         }
-
     }
 
+    public void DisplayProjectInfo(string projectName)
+    {
+        Console.WriteLine("\nProject: " + projectName);
 
+        Project p = projects.GetValueOrDefault(projectName);
+
+        Console.WriteLine("Description: " + p.description);
+        string status = p.status ? "Complete" : "Incomplete";
+        Console.WriteLine("Status: " + status);
+        Console.WriteLine("Due-Date: " + p.dueDate + " " + isLate(p.status, p.dueDate));
+        Console.WriteLine("Total Project Tasks: " + p.tasks.Count());
+        Console.WriteLine($"    Complete: { p.numComplete()}");
+        Console.WriteLine($"    Incomplete: { p.numIncomplete()}\n");
+
+    }
 }
 
