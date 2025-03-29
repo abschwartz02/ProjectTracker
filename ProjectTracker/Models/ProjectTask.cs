@@ -9,6 +9,7 @@
         public string description { get; set; }
         public string dueDate { get; set; }
 
+        public List<string> notes { get; set; }
        
         public ProjectTask(int id, string projectName, string name, Boolean status, string description, string dueDate)
         {
@@ -18,7 +19,7 @@
             this.status = status;
             this.description = description;
             this.dueDate = dueDate;
-
+            this.notes = new List<string>();
              
         }
 

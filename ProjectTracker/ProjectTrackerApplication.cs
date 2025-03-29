@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text;
 using System.Globalization;
 using System.ComponentModel.DataAnnotations;
-using System.Transactions;
+
 
 
 
@@ -284,6 +284,8 @@ class ProjectTrackerApplication
                                 break;
                             }
                             newDescription = newDescription.Trim();
+
+                            if (newDescription == "") { newDescription = "None"; }
 
                             string newDueDate = getValidDate();
 
@@ -637,8 +639,6 @@ class ProjectTrackerApplication
                         Console.WriteLine("Invalid command");
                     }
                     break;
-                case "exit":
-                    break;
                 case "finish":
                     {
                         if (words.Length != 2)
@@ -760,8 +760,253 @@ class ProjectTrackerApplication
                         }
                         break;
                     }
+                case "new":
+                    {
+                        string taskName = "";
+                        for (int i = 1; i < words.Length; i++)
+                        {
+                            taskName += words[i];
+                            if (i != words.Length - 1)
+                            {
+                                taskName += " ";
+                            }
+                        }
+
+                        if (taskName.Equals(""))
+                        {
+                            Console.WriteLine("\nNo project specified. Usage: new [task-name]\n");
+                        }
+                        else
+                        {
+
+
+                            Console.Write("Task description (Optional. Enter to skip): ");
+                            string taskDescription = Console.ReadLine();
+
+                            if (taskDescription == null)
+                            {
+                                Environment.Exit(0);
+                                break;
+                            }
+                            taskDescription = taskDescription.Trim();
+
+                            if (taskDescription == "") { taskDescription = "None"; }
+
+                            string newDueDate = getValidDate();
+
+                            currentProject.taskCount++;
+                            ProjectTask newTask = new ProjectTask(currentProject.taskCount, currentProject.name, taskName, false, taskDescription, newDueDate);
+
+        
+                            currentProject.tasks.Add(newTask.id, newTask);
+                            currentProject.checkLength(newTask.name, newTask.status);
+
+                            Console.WriteLine($"\nTask \"{newTask.name}\" has been created with id {newTask.id}!\n");
+
+                        }
+
+                        break;
+                    }
+                case "edit":
+                    {
+                        if (words.Length != 3 || ((words[1] != "name") && (words[1] != "date")))
+                        {
+                            Console.WriteLine("Invalid edit command\n\nUsage:\nedit name [task-id]\nedit date [task-id]\n");
+                            break;
+                        }
+
+                        int taskId = -1;
+                        try
+                        {
+                            taskId = Int32.Parse(words[2]);
+                        }
+                        catch (System.FormatException e)
+                        {
+                            Console.WriteLine("Invalid edit command\n\nUsage:\nedit name [task-id]\nedit date [task-id]\n");
+                            break;
+                        }
+
+                        if (!(currentProject.tasks.ContainsKey(taskId)))
+                        {
+                            Console.WriteLine($"\nNo task with id {taskId}\n");
+                            break;
+                        }
+                        ProjectTask currentTask = currentProject.tasks.GetValueOrDefault(taskId);
+
+                        if (words[1] == "date")
+                        {
+                            string newDueDate = getValidDate();
+                            currentTask.dueDate = newDueDate;
+
+                            Console.WriteLine($"\nDate for task {taskId} has been updated to {newDueDate}\n");
+                        }
+                        else
+                        {
+                            string newName = "";
+                            Console.Write($"New name for task {taskId}: ");
+                            newName = Console.ReadLine();
+
+                            if (newName == null)
+                            {
+                                Environment.Exit(0);
+                            }
+
+                            while (newName == "")
+                            {
+                                Console.WriteLine("Task name cannot be empty\n");
+                                Console.Write($"New name for task {taskId}: ");
+                                newName = Console.ReadLine();
+
+                                if (newName == null)
+                                {
+                                    Environment.Exit(0);
+                                }
+                            }
+
+                            
+                            currentTask.name = newName;
+                            currentProject.checkLength(newName, currentTask.status);
+
+                            Console.WriteLine($"\nTask {taskId} successfuly renamed to {newName}\n");
+                        }
+                        break;
+                    }
+                case "view":
+                    {
+                        if (words.Length != 2)
+                        {
+                            Console.WriteLine("\nInvalid view command.\nUsage: view [task-id]\n");
+                            break;
+                        }
+
+                        int taskId = -1;
+                        try
+                        {
+                            taskId = Int32.Parse(words[1]);
+                        }
+                        catch (System.FormatException e)
+                        {
+                            Console.WriteLine("\nInvalid view command.\nUsage: view [task-id]\n");
+                            break;
+                        }
+
+                        if (!(currentProject.tasks.ContainsKey(taskId)))
+                        {
+                            Console.WriteLine($"\nNo task with id {taskId}\n");
+                            break;
+                        }
+
+                        ProjectTask currentTask = currentProject.tasks.GetValueOrDefault(taskId);
+                        Console.WriteLine("\nTask Id #: " + taskId + "\n");
+                        Console.WriteLine("Task: " + currentTask.name);
+                        Console.WriteLine("Description: " + currentTask.description);
+                        string status = currentTask.status ? "Complete" : "Incomplete";
+                        Console.WriteLine("Status: " + status);
+                        Console.WriteLine("Due-Date: " + currentTask.dueDate + " " + isLate(currentTask.status, currentTask.dueDate));
+
+                        Console.WriteLine("\nNotes:\n");
+
+                        if (currentTask.notes.Count == 0)
+                        {
+                            Console.WriteLine("none");
+                        }
+                        else
+                        {
+                            for (int i = 0; i < currentTask.notes.Count; i++)
+                            {
+                                Console.Write(" * ");
+                                
+                                string[] noteLines = currentTask.notes[i].Split("\n");
+                                for (int j = 0; j < noteLines.Length; j++)
+                                {
+                                    if (j != 0)
+                                    {
+                                        Console.Write("   ");
+                                    }
+                                    if (noteLines[j] != "\n")
+                                    {
+                                        Console.WriteLine(noteLines[j]);
+                                    }
+                                    
+                                }
+                                Console.WriteLine();
+
+                            }
+                            
+                        }
+
+                        
+                        break;
+                    }
+                case "note":
+                    {
+                        if (words.Length != 2)
+                        {
+                            Console.WriteLine("\nInvalid view command.\nUsage: view [task-id]\n");
+                            break;
+                        }
+
+                        int taskId = -1;
+                        try
+                        {
+                            taskId = Int32.Parse(words[1]);
+                        }
+                        catch (System.FormatException e)
+                        {
+                            Console.WriteLine("\nInvalid view command.\nUsage: view [task-id]\n");
+                            break;
+                        }
+
+                        if (!(currentProject.tasks.ContainsKey(taskId)))
+                        {
+                            Console.WriteLine($"\nNo task with id {taskId}\n");
+                            break;
+                        }
+
+                        ProjectTask currentTask = currentProject.tasks.GetValueOrDefault(taskId);
+
+                        Console.WriteLine("\nNew Note (Double enter to confirm):\n");
+
+                        string note = "";
+
+                        note = Console.ReadLine();
+                        if (note == null)
+                        {
+                            Environment.Exit(0);
+                        }
+                        note = note + "\n";
+                        // keep reading request until a double line brake is detected
+                        
+                        while (!note.Contains("\n\n"))
+                        {
+                            string nextLine = Console.ReadLine();
+                            if (nextLine == null)
+                            {
+                                Environment.Exit(0);
+                            }
+                            note = note + nextLine + "\n";
+                        }
+
+                        note = note.Trim();
+                        if (note == "")
+                        {
+                            Console.WriteLine("Note cannot be empty\n");
+                        }
+                        else
+                        {
+                            currentTask.notes.Add(note);
+                            Console.WriteLine("Note has been added to task " + taskId);
+                        }
+                        
+                        break;
+
+
+                    }
                 case "quit":
                     Environment.Exit(0);
+                    break;
+                case "exit":
+                    Console.WriteLine();
                     break;
                 default:
                     Console.WriteLine("\nInvalid command\nEnter \"help\" to view task commands\n");
@@ -780,7 +1025,7 @@ class ProjectTrackerApplication
     public void displayHomeMenu()
     {
         Console.WriteLine("\nHome Commands:\n");
-        Console.WriteLine("____________________________________________________________________________ ");
+        Console.WriteLine("____________________________________________________________________________");
         Console.WriteLine("| Command                      | Usage                                     |");
         Console.WriteLine("|______________________________|___________________________________________|");
         Console.WriteLine("|                              |                                           |");
@@ -795,7 +1040,7 @@ class ProjectTrackerApplication
         Console.WriteLine("| finish [project-name]        | Marks the specified project as complete   |");
         Console.WriteLine("| unfinish [project-name]      | Marks the specified project as incomplete |");
         Console.WriteLine("|                              |                                           |");
-        Console.WriteLine("| edit name [project-name]     | Edit the name of an existign project      |");
+        Console.WriteLine("| edit name [project-name]     | Edit the name of an existing project      |");
         Console.WriteLine("| edit date [project-name]     | Edit the date of an existing project      |");
         Console.WriteLine("|                              |                                           |");
         Console.WriteLine("| enter [project-name]         | Enters the specified project              |");
@@ -809,7 +1054,7 @@ class ProjectTrackerApplication
     {
 
         Console.WriteLine("\nTask Commands:\n");
-        Console.WriteLine("____________________________________________________________________________ ");
+        Console.WriteLine("____________________________________________________________________________");
         Console.WriteLine("| Command                      | Usage                                     |");
         Console.WriteLine("|______________________________|___________________________________________|");
         Console.WriteLine("|                              |                                           |");
@@ -817,13 +1062,16 @@ class ProjectTrackerApplication
         Console.WriteLine("| list -c                      | Lists all complete projects tasks         |");
         Console.WriteLine("| list -i                      | Lists all incomplete projects tasks       |");
         Console.WriteLine("|                              |                                           |");
+        Console.WriteLine("| view [task-id]               | View details/notes of the specified task  |");
+        Console.WriteLine("| note [task-id]               | Add a note to the specified task          |");
+        Console.WriteLine("|                              |                                           |");
         Console.WriteLine("| new [task-name]              | Creates a new task                        |");
         Console.WriteLine("| del [task-id]                | Deletes the specified task                |");
         Console.WriteLine("|                              |                                           |");
         Console.WriteLine("| finish [task-id]             | Marks the specified task as complete      |");
         Console.WriteLine("| unfinish [task-id]           | Marks the specified task as incomplete    |");
         Console.WriteLine("|                              |                                           |");
-        Console.WriteLine("| edit name [task-id]          | Edit the name of an existign task         |");
+        Console.WriteLine("| edit name [task-id]          | Edit the name of an existing task         |");
         Console.WriteLine("| edit date [task-id]          | Edit the date of an existing task         |");
         Console.WriteLine("|                              |                                           |");
         Console.WriteLine("| exit                         | Exits the current project                 |");
@@ -839,8 +1087,16 @@ class ProjectTrackerApplication
     {
         projects = new Dictionary<string, Project>();
 
-        string jsonContent = File.ReadAllText("../../../ProjectData.json");
-
+        string jsonContent = "";
+        try
+        {
+            jsonContent = File.ReadAllText("../../../ProjectData.json");
+        }
+        catch (System.IO.FileNotFoundException e)
+        {
+            //no file no problem, just app with no loaded data
+            return;
+        }
         JsonDocument doc = JsonDocument.Parse(jsonContent);
 
         JsonElement rootElement = doc.RootElement;
@@ -874,6 +1130,15 @@ class ProjectTrackerApplication
                 string taskDueDate = projectElement.GetProperty("dueDate").ToString();
 
                 ProjectTask newTask = new ProjectTask(taskId, projectName, taskName, taskStatus, taskDescription, taskDueDate);
+
+                JsonElement notesElement = taskElement.GetProperty("notes");
+
+                foreach (JsonElement note in notesElement.EnumerateArray())
+                {
+                    newTask.notes.Add(note.GetString());
+                   
+                }
+
                 newProject.addTask(newTask);
                 
 
@@ -918,8 +1183,18 @@ class ProjectTrackerApplication
                 jsonBuilder.AppendLine($"        \"status\": {myTask.status.ToString().ToLower()},");
                 jsonBuilder.AppendLine($"        \"name\": \"{myTask.name}\",");
                 jsonBuilder.AppendLine($"        \"description\": \"{myTask.description}\",");
-                jsonBuilder.AppendLine($"        \"dueDate\": \"{myTask.dueDate}\"");
-
+                jsonBuilder.AppendLine($"        \"dueDate\": \"{myTask.dueDate}\",");
+                jsonBuilder.AppendLine("        \"notes\": [");
+                for (int k = 0; k < myTask.notes.Count; k++)
+                {
+                    jsonBuilder.Append($"            \"{ myTask.notes[k]}\"");
+                    if (k != myTask.notes.Count - 1)
+                    {
+                        jsonBuilder.AppendLine(",");
+                    }
+                }
+                jsonBuilder.AppendLine();
+                jsonBuilder.AppendLine("        ]");
 
                 if (j == myProject.tasks.Count - 1)
                 {
