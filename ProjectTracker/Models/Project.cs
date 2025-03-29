@@ -36,7 +36,7 @@ namespace ProjectTracker.Models
             checkLength(task.name, task.status);
         }
 
-        void checkLength(string name, bool status)
+        public void checkLength(string name, bool status)
         {
             if (name.Length > maxTaskLength)
             {

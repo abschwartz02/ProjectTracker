@@ -639,6 +639,127 @@ class ProjectTrackerApplication
                     break;
                 case "exit":
                     break;
+                case "finish":
+                    {
+                        if (words.Length != 2)
+                        {
+                            Console.WriteLine("\nInvalid finsih command.\nUsage: finish [task-id]\n");
+                            break;
+                        }
+
+                        int taskId = -1;
+                        try
+                        {
+                            taskId = Int32.Parse(words[1]);
+                        }
+                        catch (System.FormatException e)
+                        {
+                            Console.WriteLine("\nInvalid finsih command.\nUsage: finish [task-id]\n");
+                            break;
+                        }
+
+                        if (!(currentProject.tasks.ContainsKey(taskId)))
+                        {
+                            Console.WriteLine($"\nNo task with id {taskId}\n");
+                            break;
+                        }
+
+                        ProjectTask currentTask = currentProject.tasks.GetValueOrDefault(taskId);
+                        currentProject.checkLength(currentTask.name, true);
+                        currentTask.status = true;
+
+                        Console.WriteLine($"\nTask {taskId} has been marked as complete\n");
+                        break;
+                    }
+                   
+                case "unfinish":
+                    {
+                        if (words.Length != 2)
+                        {
+                            Console.WriteLine("\nInvalid unfinsih command.\nUsage: unfinish [task-id]\n");
+                            break;
+                        }
+
+                        int taskId = -1;
+                        try
+                        {
+                            taskId = Int32.Parse(words[1]);
+                        }
+                        catch (System.FormatException e)
+                        {
+                            Console.WriteLine("\nInvalid unfinsih command.\nUsage: unfinish [task-id]\n");
+                            break;
+                        }
+
+                        if (!(currentProject.tasks.ContainsKey(taskId)))
+                        {
+                            Console.WriteLine($"\nNo task with id {taskId}\n");
+                            break;
+                        }
+
+                        ProjectTask currentTask = currentProject.tasks.GetValueOrDefault(taskId);
+                        currentProject.checkLength(currentTask.name, false);
+                        currentTask.status = false;
+
+                        Console.WriteLine($"\nTask {taskId} has been marked as incomplete\n");
+                        break;
+                    }
+                case "del":
+                    {
+                        if (words.Length != 2)
+                        {
+                            Console.WriteLine("\nInvalid del command.\nUsage: del [task-id]\n");
+                            break;
+                        }
+
+                        int taskId = -1;
+                        try
+                        {
+                            taskId = Int32.Parse(words[1]);
+                        }
+                        catch (System.FormatException e)
+                        {
+                            Console.WriteLine("\nInvalid del command.\nUsage: del [task-id]\n");
+                            break;
+                        }
+
+                        if (!(currentProject.tasks.ContainsKey(taskId)))
+                        {
+                            Console.WriteLine($"\nNo task with id {taskId}\n");
+                            break;
+                        }
+
+                        Console.Write($"Are you sure you wish to delete task {taskId}? (y/n): ");
+                        string deleteResponse = Console.ReadLine();
+                        if (deleteResponse == null)
+                        {
+                            Environment.Exit(0);
+                            break;
+                        }
+
+                        deleteResponse = deleteResponse.ToLower().Trim();
+                        while (!(deleteResponse == null) && !deleteResponse.Equals("y") && !deleteResponse.Equals("yes") && !deleteResponse.Equals("n") && !deleteResponse.Equals("no"))
+                        {
+                            deleteResponse = deleteResponse.ToLower().Trim();
+                            Console.WriteLine("Invalid input");
+                            Console.Write($"Are you sure you wish to delete task {taskId}? (y/n): ");
+                            deleteResponse = Console.ReadLine();
+                        }
+
+                        if (deleteResponse == null)
+                        {
+                            Environment.Exit(0);
+                            break;
+                        }
+
+                        if (deleteResponse.Contains("y"))
+                        {
+                            //no current accomodation to adjust if it is the max project name
+                            currentProject.tasks.Remove(taskId);
+                            Console.WriteLine($"\nTask {taskId} has been deleted\n");
+                        }
+                        break;
+                    }
                 case "quit":
                     Environment.Exit(0);
                     break;
