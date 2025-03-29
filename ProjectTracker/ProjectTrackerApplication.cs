@@ -275,16 +275,29 @@ class ProjectTrackerApplication
                         {
                             
 
-                            Console.Write("Project description (Optional. Enter to skip): ");
-                            string newDescription = Console.ReadLine();
+                            Console.WriteLine("Project description (Optional. Double enter to skip/confirm):");
 
+                            string newDescription = "";
+                            newDescription = Console.ReadLine();
                             if (newDescription == null)
                             {
                                 Environment.Exit(0);
-                                break;
                             }
-                            newDescription = newDescription.Trim();
+                            newDescription = newDescription + "\n";
+                            // keep reading request until a double line brake is detected
 
+                            while (!newDescription.Contains("\n\n"))
+                            {
+                                string nextLine = Console.ReadLine();
+                                if (nextLine == null)
+                                {
+                                    Environment.Exit(0);
+                                }
+                                newDescription = newDescription + nextLine + "\n";
+                            }
+
+                           
+                            newDescription = newDescription.Trim();
                             if (newDescription == "") { newDescription = "None"; }
 
                             string newDueDate = getValidDate();
@@ -780,22 +793,37 @@ class ProjectTrackerApplication
                         {
 
 
-                            Console.Write("Task description (Optional. Enter to skip): ");
-                            string taskDescription = Console.ReadLine();
+                            Console.WriteLine("Task description (Optional. Double enter to skip):");
 
-                            if (taskDescription == null)
+                            string newDescription = "";
+                            newDescription = Console.ReadLine();
+                            if (newDescription == null)
                             {
                                 Environment.Exit(0);
-                                break;
                             }
-                            taskDescription = taskDescription.Trim();
+                            newDescription = newDescription + "\n";
+                            // keep reading request until a double line brake is detected
 
-                            if (taskDescription == "") { taskDescription = "None"; }
+                            while (!newDescription.Contains("\n\n"))
+                            {
+                                string nextLine = Console.ReadLine();
+                                if (nextLine == null)
+                                {
+                                    Environment.Exit(0);
+                                }
+                                newDescription = newDescription + nextLine + "\n";
+                            }
+
+
+                            newDescription = newDescription.Trim();
+
+                            if (newDescription == "") { newDescription = "None"; }
+
 
                             string newDueDate = getValidDate();
 
                             currentProject.taskCount++;
-                            ProjectTask newTask = new ProjectTask(currentProject.taskCount, currentProject.name, taskName, false, taskDescription, newDueDate);
+                            ProjectTask newTask = new ProjectTask(currentProject.taskCount, currentProject.name, taskName, false, newDescription, newDueDate);
 
         
                             currentProject.tasks.Add(newTask.id, newTask);
@@ -899,7 +927,14 @@ class ProjectTrackerApplication
                         ProjectTask currentTask = currentProject.tasks.GetValueOrDefault(taskId);
                         Console.WriteLine("\nTask Id #: " + taskId + "\n");
                         Console.WriteLine("Task: " + currentTask.name);
-                        Console.WriteLine("Description: " + currentTask.description);
+                        Console.WriteLine("Description:\n");
+                        string[] descriptionLines = currentTask.description.Split("\n");
+                        for (int i = 0; i < descriptionLines.Length; i++)
+                        {
+                            Console.Write("   ");
+                            Console.WriteLine(descriptionLines[i]);
+                        }
+                        Console.WriteLine();
                         string status = currentTask.status ? "Complete" : "Incomplete";
                         Console.WriteLine("Status: " + status);
                         Console.WriteLine("Due-Date: " + currentTask.dueDate + " " + isLate(currentTask.status, currentTask.dueDate));
@@ -908,7 +943,7 @@ class ProjectTrackerApplication
 
                         if (currentTask.notes.Count == 0)
                         {
-                            Console.WriteLine("none");
+                            Console.WriteLine("   none\n");
                         }
                         else
                         {
@@ -995,7 +1030,7 @@ class ProjectTrackerApplication
                         else
                         {
                             currentTask.notes.Add(note);
-                            Console.WriteLine("Note has been added to task " + taskId);
+                            Console.WriteLine("Note has been added to task " + taskId + "\n");
                         }
                         
                         break;
@@ -1413,13 +1448,20 @@ class ProjectTrackerApplication
 
         Project p = projects.GetValueOrDefault(projectName);
 
-        Console.WriteLine("Description: " + p.description);
+        Console.WriteLine("Description:\n");
+        string[] descriptionLines = p.description.Split("\n");
+        for (int i = 0; i < descriptionLines.Length; i++)
+        {
+            Console.Write("   ");
+            Console.WriteLine(descriptionLines[i]);
+        }
+        Console.WriteLine();
         string status = p.status ? "Complete" : "Incomplete";
         Console.WriteLine("Status: " + status);
         Console.WriteLine("Due-Date: " + p.dueDate + " " + isLate(p.status, p.dueDate));
         Console.WriteLine("Total Project Tasks: " + p.tasks.Count());
-        Console.WriteLine($"    Complete: { p.numComplete()}");
-        Console.WriteLine($"    Incomplete: { p.numIncomplete()}\n");
+        Console.WriteLine($"   Complete: { p.numComplete()}");
+        Console.WriteLine($"   Incomplete: { p.numIncomplete()}\n");
 
     }
 }
