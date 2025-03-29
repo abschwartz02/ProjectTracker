@@ -17,6 +17,7 @@ class ProjectTrackerApplication
     
     static void Main()
     {
+        Console.WriteLine("\\n");
         ProjectTrackerApplication app = null;
         try
         {
@@ -1201,7 +1202,17 @@ class ProjectTrackerApplication
             jsonBuilder.AppendLine("  {");
            
             jsonBuilder.AppendLine($"    \"name\": \"{myProject.name}\",");
-            jsonBuilder.AppendLine($"    \"description\": \"{myProject.description}\",");
+            jsonBuilder.Append($"    \"description\": \"");
+            string[] projectDescriptionLines = myProject.description.Split("\n");
+            for (int j = 0; j < projectDescriptionLines.Length; j++)
+            {
+                jsonBuilder.Append(projectDescriptionLines[j]);
+                if (j !=  projectDescriptionLines.Length - 1)
+                {
+                    jsonBuilder.Append("\\n");
+                }
+            }
+            jsonBuilder.AppendLine("\",");
             jsonBuilder.AppendLine($"    \"status\": {myProject.status.ToString().ToLower()},");
             jsonBuilder.AppendLine($"    \"dueDate\": \"{myProject.dueDate}\",");
             jsonBuilder.AppendLine($"    \"taskCount\": {myProject.taskCount},");
@@ -1220,15 +1231,29 @@ class ProjectTrackerApplication
                 jsonBuilder.AppendLine($"        \"description\": \"{myTask.description}\",");
                 jsonBuilder.AppendLine($"        \"dueDate\": \"{myTask.dueDate}\",");
                 jsonBuilder.AppendLine("        \"notes\": [");
+                
                 for (int k = 0; k < myTask.notes.Count; k++)
                 {
-                    jsonBuilder.Append($"            \"{ myTask.notes[k]}\"");
+                    string[] notesLines = myTask.notes[k].Split("\n");
+                    jsonBuilder.Append("            \"");
+                    for (int l = 0; l < notesLines.Length; l++)
+                    {
+                        jsonBuilder.Append(notesLines[l]);
+                        if (l != notesLines.Length - 1)
+                        {
+                            jsonBuilder.Append("\\n");
+                        }
+                    }
+                    jsonBuilder.Append("\"");
                     if (k != myTask.notes.Count - 1)
                     {
                         jsonBuilder.AppendLine(",");
                     }
+                    else
+                    {
+                        jsonBuilder.AppendLine();
+                    }
                 }
-                jsonBuilder.AppendLine();
                 jsonBuilder.AppendLine("        ]");
 
                 if (j == myProject.tasks.Count - 1)
