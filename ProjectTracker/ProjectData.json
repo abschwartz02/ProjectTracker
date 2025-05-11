@@ -1,2 +1,73 @@
 [
+  {
+    "name": "GoalBot",
+    "description": "Discord goal bot for tracking goals",
+    "status": false,
+    "dueDate": "None",
+    "taskCount": 7,
+    "tasks": [
+      {
+        "id": 1,
+        "projectName": "GoalBot",
+        "status": true,
+        "name": "command-skeletons",
+        "description": "Make skeleton functions for all commands",
+        "dueDate": "None",
+        "notes": [
+            "Ensure that propogating global commands\nthat have been edited do not create \nduplicate commands."
+        ]
+      },
+      {
+        "id": 2,
+        "projectName": "GoalBot",
+        "status": false,
+        "name": "prevent-sql-injections",
+        "description": "make sure no sql injections can be made",
+        "dueDate": "None",
+        "notes": [
+            "entering quotes cuases error, see if can\nbe sanitized"
+        ]
+      },
+      {
+        "id": 3,
+        "projectName": "GoalBot",
+        "status": false,
+        "name": "learn-python-unit-testing",
+        "description": "Learn how to unit test in python",
+        "dueDate": "None",
+        "notes": [
+        ]
+      },
+      {
+        "id": 4,
+        "projectName": "GoalBot",
+        "status": false,
+        "name": "date-conversion",
+        "description": "Have a function that converts mm/dd/yyyy to yyyy-mm-dd\nfor sql tables and vise-versa",
+        "dueDate": "None",
+        "notes": [
+        ]
+      },
+      {
+        "id": 6,
+        "projectName": "GoalBot",
+        "status": true,
+        "name": "autoincrement-db-id",
+        "description": "Replace the name field in the goals table of the\ndb to an int value that auto increments according\nto the notes on whiteboard.",
+        "dueDate": "None",
+        "notes": [
+        ]
+      },
+      {
+        "id": 7,
+        "projectName": "GoalBot",
+        "status": false,
+        "name": "async-function-calls",
+        "description": "Research if functions calls within an async function\nshould be async or not",
+        "dueDate": "None",
+        "notes": [
+        ]
+      }
+    ]
+   }
 ]

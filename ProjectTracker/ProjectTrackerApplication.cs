@@ -2,19 +2,13 @@
 using System.Text.Json;
 using System.Text;
 using System.Globalization;
-using System.ComponentModel.DataAnnotations;
-
-
-
 
 class ProjectTrackerApplication
-{
-    
+{    
     Dictionary<string, Project> projects;
     int maxProjectLength;
     int maxActiveProjectLength;
-    int maxInactiveProjectLength;
-    
+    int maxInactiveProjectLength;    
     static void Main()
     {
         Console.WriteLine("\\n");
@@ -28,19 +22,14 @@ class ProjectTrackerApplication
         {
             Console.WriteLine(e.Message);
             Environment.Exit(1);
-        }
-
-        
-        
+        }               
     }
-
     public ProjectTrackerApplication()
     {
         maxProjectLength = 0;
         maxActiveProjectLength = 0;
         maxInactiveProjectLength = 0;
-        loadData();
-       
+        loadData();       
     }
     void ProjectsUserInterface()
     {
@@ -61,45 +50,18 @@ class ProjectTrackerApplication
             "*      *     *  *****   *****   *****  *****   *        *  *     * *           *  ***** *     * ***** *     *  **\n"
 
         };
-
         foreach (string line in projectTaskTracker)
         {
             Console.WriteLine(line);
-            
-            
         }
-
-        
-        
-
-        
         Console.WriteLine("Welcome to Project Tracker! Project Tracker is a neat tool used to\nmaintain tasks for various projects you may be working on.Type any\ncommand to begin\n");
-
         Console.WriteLine("Enter \"help\" to view home commands");
         string response = "";
         while(!response.Equals("quit"))
         {
-
-            response = "";
-            while (response != null && response.Equals(""))
-            {
-                Console.Write(">>> ");
-                response = Console.ReadLine();
-                
-            }
-
-            if (response == null)
-            {
-                break;
-            }
-
-            response = response.Trim();
-            string[] words = response.Split(" ");
-            
-            
-            
+            response = getCommandInput(true, "");
+            string[] words = response.Split(" ");                               
             string command = words[0].ToLower();
-
             switch (command)
             {
                 case "help":
@@ -133,7 +95,6 @@ class ProjectTrackerApplication
                     else if (words.Length == 2 && words[1].ToLower().Equals("-c"))
                     {
                         bool menuPrinted = false;
-
                         foreach (KeyValuePair<string, Project> entry in projects)
                         {
                             Project project = entry.Value;
@@ -149,7 +110,6 @@ class ProjectTrackerApplication
                             }
 
                         }
-
                         if (!menuPrinted)
                         {
                             Console.WriteLine("\nNo complete projects in the system\n");
@@ -163,8 +123,6 @@ class ProjectTrackerApplication
                     else if (words.Length == 2 && words[1].ToLower().Equals("-i"))
                     {
                         bool menuPrinted = false;
-
-
                         foreach (KeyValuePair<string, Project> entry in projects)
                         {
                             Project project = entry.Value;
@@ -178,10 +136,7 @@ class ProjectTrackerApplication
                                 string result = String.Format("{0} {1} {2} {3}", project.name.PadRight(maxInactiveProjectLength + 2), "Incomplete".PadRight(11), project.dueDate.PadRight(0), isLate(project.status, project.dueDate));
                                 Console.WriteLine(result);
                             }
-
                         }
-
-
                         if (!menuPrinted)
                         {
                             Console.WriteLine("\nNo incomplete projects in the system\n");
@@ -196,18 +151,9 @@ class ProjectTrackerApplication
                         Console.WriteLine("Invalid command");
                     }
                     break;
-
                 case "del":
                     {
-                        string projectName = "";
-                        for (int i = 1; i < words.Length; i++)
-                        {
-                            projectName += words[i];
-                            if (i != words.Length - 1)
-                            {
-                                projectName += " ";
-                            }
-                        }
+                        string projectName = GetCombinedName(words, 1);
 
                         if (projectName.Equals(""))
                         {
@@ -219,51 +165,19 @@ class ProjectTrackerApplication
                         }
                         else
                         {
-                            Console.Write($"Are you sure you wish to delete {projectName}? (y/n): ");
-                            string deleteResponse = Console.ReadLine();
-                            if (deleteResponse == null)
-                            {
-                                Environment.Exit(0);
-                                break;
-                            }
-
-                            deleteResponse = deleteResponse.ToLower().Trim();
-                            while (!(deleteResponse == null) &&!deleteResponse.Equals("y") && !deleteResponse.Equals("yes") && !deleteResponse.Equals("n") && !deleteResponse.Equals("no"))
-                            {
-                                deleteResponse = deleteResponse.ToLower().Trim();
-                                Console.WriteLine("Invalid input");
-                                Console.Write($"Are you sure you wish to delete {projectName}? (y/n): ");
-                                deleteResponse = Console.ReadLine();
-                            }
-
-                            if (deleteResponse == null)
-                            {
-                                Environment.Exit(0);
-                                break;
-                            }
-
+                            string deleteResponse = GetDeleteResponse($"Are you sure you wish to delete {projectName}? (y/n): ");                            
                             if (deleteResponse.Contains("y"))
                             {
                                 //no current accomodation to adjust if it is the max project name
                                 projects.Remove(projectName);
                                 Console.WriteLine($"{projectName} has been delete\n");
                             }
-
                         }
                         break;
                     }
                 case "new":
                     {
-                        string projectName = "";
-                        for (int i = 1; i < words.Length; i++)
-                        {
-                            projectName += words[i];
-                            if (i != words.Length - 1)
-                            {
-                                projectName += " ";
-                            }
-                        }
-
+                        string projectName = GetCombinedName(words, 1);
                         if (projectName.Equals(""))
                         {
                             Console.WriteLine("\nNo project specified. Usage: new [project-name]\n");
@@ -273,58 +187,21 @@ class ProjectTrackerApplication
                             Console.WriteLine($"\nProject with name \"{projectName}\" already exsits\n");
                         }
                         else
-                        {
-                            
-
-                            Console.WriteLine("Project description (Optional. Double enter to skip/confirm):");
-
-                            string newDescription = "";
-                            newDescription = Console.ReadLine();
-                            if (newDescription == null)
-                            {
-                                Environment.Exit(0);
-                            }
-                            newDescription = newDescription + "\n";
-                            // keep reading request until a double line brake is detected
-
-                            while (!newDescription.Contains("\n\n"))
-                            {
-                                string nextLine = Console.ReadLine();
-                                if (nextLine == null)
-                                {
-                                    Environment.Exit(0);
-                                }
-                                newDescription = newDescription + nextLine + "\n";
-                            }
-
-                           
-                            newDescription = newDescription.Trim();
+                        {                           
+                            Console.WriteLine("Project description (Optional. Double enter to skip/confirm):\n");
+                            string newDescription = GetMultiLineInput();
                             if (newDescription == "") { newDescription = "None"; }
-
                             string newDueDate = getValidDate();
-
                             Project newProject = new Project(projectName, newDescription, false, newDueDate, 0);
-
                             projects.Add(newProject.name, newProject);
                             checkLength(newProject.name, newProject.status);
-
                             Console.WriteLine($"\n{newProject.name} has been created!\n");
-
                         }
-
                         break;
                     }
                 case "finish":
                     {
-                        string projectName = "";
-                        for (int i = 1; i < words.Length; i++)
-                        {
-                            projectName += words[i];
-                            if (i != words.Length - 1)
-                            {
-                                projectName += " ";
-                            }
-                        }
+                        string projectName = GetCombinedName(words, 1);
 
                         if (projectName.Equals(""))
                         {
@@ -344,15 +221,7 @@ class ProjectTrackerApplication
                     }
                 case "unfinish":
                     {
-                        string projectName = "";
-                        for (int i = 1; i < words.Length; i++)
-                        {
-                            projectName += words[i];
-                            if (i != words.Length - 1)
-                            {
-                                projectName += " ";
-                            }
-                        }
+                        string projectName = GetCombinedName(words, 1);
 
                         if (projectName.Equals(""))
                         {
@@ -378,15 +247,7 @@ class ProjectTrackerApplication
                         }
                         else if (words[1].ToLower() == "name" || words[1].ToLower() == "date")
                         {
-                            string projectName = "";
-                            for (int i = 2; i < words.Length; i++)
-                            {
-                                projectName += words[i];
-                                if (i != words.Length - 1)
-                                {
-                                    projectName += " ";
-                                }
-                            }
+                            string projectName = GetCombinedName(words, 2);
 
                             if (words[1].ToLower() == "name" && projectName.Equals(""))
                             {
@@ -405,7 +266,6 @@ class ProjectTrackerApplication
                                 if (words[1] == "date")
                                 {
                                     string newDate = getValidDate();
-
                                     projects.GetValueOrDefault(projectName).dueDate = newDate;
 
                                     Console.WriteLine($"\nDate for {projectName} has been updated to {newDate}\n");
@@ -415,11 +275,7 @@ class ProjectTrackerApplication
                                     string newName = "";
                                     Console.Write($"New name for {projectName}: ");
                                     newName = Console.ReadLine();
-
-                                    if (newName == null)
-                                    {
-                                        Environment.Exit(0);
-                                    }
+                                    NullCleanTerminator(newName);
 
                                     newName = newName.Trim();
                                     while (newName == "" || nameExists(newName))
@@ -432,18 +288,11 @@ class ProjectTrackerApplication
                                         {
                                             Console.WriteLine($"\nProject with the name {newName} already exists\n");
                                         }
-
                                         Console.Write($"New name for {projectName}: ");
                                         newName = Console.ReadLine();
-
-                                        if (newName == null)
-                                        {
-                                            Environment.Exit(0);
-                                        }
+                                        NullCleanTerminator(newName);
                                         newName = newName.Trim();
                                     }
-
-
                                     Project p = projects.GetValueOrDefault(projectName);
                                     p.name = newName;
                                     foreach (KeyValuePair<int, ProjectTask> taskEntry in p.tasks)
@@ -451,17 +300,11 @@ class ProjectTrackerApplication
                                         ProjectTask task = taskEntry.Value;
                                         task.projectName = newName;
                                     }
-
                                     checkLength(newName, p.status);
-
                                     projects.Add(newName, p);
                                     projects.Remove(projectName);
-
                                     Console.WriteLine($"\n{projectName} successfuly renamed to {newName}\n");
-
-                                }
-                                
-                                
+                                }                                                               
                             }
                         }
                         else
@@ -472,16 +315,7 @@ class ProjectTrackerApplication
                     }
                 case "enter":
                     {
-                        string projectName = "";
-                        for (int i = 1; i < words.Length; i++)
-                        {
-                            projectName += words[i];
-                            if (i != words.Length - 1)
-                            {
-                                projectName += " ";
-                            }
-                        }
-
+                        string projectName = GetCombinedName(words, 1);
                         if (projectName.Equals(""))
                         {
                             Console.WriteLine("\nNo project specified. Usage: enter [project-name]\n");
@@ -491,24 +325,14 @@ class ProjectTrackerApplication
                             Console.WriteLine($"\nNo project with name \"{projectName}\"\n");
                         }
                         else
-                        {
-                           
+                        {                          
                             TaskUserInterface(projectName);
                         }
                         break;
                     }
                 case "view":
                     {
-                        string projectName = "";
-                        for (int i = 1; i < words.Length; i++)
-                        {
-                            projectName += words[i];
-                            if (i != words.Length - 1)
-                            {
-                                projectName += " ";
-                            }
-                        }
-
+                        string projectName = GetCombinedName(words, 1);
                         if (projectName.Equals(""))
                         {
                             Console.WriteLine("\nNo project specified. Usage: view [project-name]\n");
@@ -529,8 +353,6 @@ class ProjectTrackerApplication
                 default:
                     Console.WriteLine("\nInvalid command\nEnter \"help\" to view home commands\n");
                     break;
-
-
             }
         } 
     }
@@ -538,30 +360,14 @@ class ProjectTrackerApplication
     void TaskUserInterface(string projectName)
     {
         Console.WriteLine("Entered " + projectName +"\n");
-
         Console.WriteLine("Enter \"help\" to view task commands\n");
         string response = "";
         Project currentProject = projects.GetValueOrDefault(projectName);
         while (!response.Equals("exit"))
         {
-
-            response = "";
-            while (response != null && response.Equals(""))
-            {
-                Console.Write($"{projectName}>>> ");
-                response = Console.ReadLine();
-
-            }
-
-            if (response == null)
-            {
-                Environment.Exit(0);
-            }
-
-            response = response.Trim();
+            response = getCommandInput(false, projectName);
             string[] words = response.Split(" ");
             string command = words[0].ToLower();
-
             switch (command)
             {
                 case "help":
@@ -590,7 +396,6 @@ class ProjectTrackerApplication
                     else if (words.Length == 2 && words[1].ToLower().Equals("-c"))
                     {
                         bool menuPrinted = false;
-
                         foreach (KeyValuePair<int, ProjectTask> entry in currentProject.tasks)
                         {
                             ProjectTask projectTask = entry.Value;
@@ -604,9 +409,7 @@ class ProjectTrackerApplication
                                 string result = String.Format("{0} {1} {2} {3} {4}", projectTask.id.ToString().PadRight(4), projectTask.name.PadRight(currentProject.maxActiveTaskLength + 2), "Complete".PadRight(9), projectTask.dueDate.PadRight(0), isLate(projectTask.status, projectTask.dueDate));
                                 Console.WriteLine(result);
                             }
-
                         }
-
                         if (!menuPrinted)
                         {
                             Console.WriteLine("\nNo complete tasks for this project\n");
@@ -620,8 +423,6 @@ class ProjectTrackerApplication
                     else if (words.Length == 2 && words[1].ToLower().Equals("-i"))
                     {
                         bool menuPrinted = false;
-
-
                         foreach (KeyValuePair<int, ProjectTask> entry in currentProject.tasks)
                         {
                             ProjectTask projectTask = entry.Value;
@@ -637,8 +438,6 @@ class ProjectTrackerApplication
                             }
 
                         }
-
-
                         if (!menuPrinted)
                         {
                             Console.WriteLine("\nNo incomplete tasks for this project\n");
@@ -655,185 +454,55 @@ class ProjectTrackerApplication
                     break;
                 case "finish":
                     {
-                        if (words.Length != 2)
-                        {
-                            Console.WriteLine("\nInvalid finsih command.\nUsage: finish [task-id]\n");
-                            break;
-                        }
-
-                        int taskId = -1;
-                        try
-                        {
-                            taskId = Int32.Parse(words[1]);
-                        }
-                        catch (System.FormatException e)
-                        {
-                            Console.WriteLine("\nInvalid finsih command.\nUsage: finish [task-id]\n");
-                            break;
-                        }
-
-                        if (!(currentProject.tasks.ContainsKey(taskId)))
-                        {
-                            Console.WriteLine($"\nNo task with id {taskId}\n");
-                            break;
-                        }
-
-                        ProjectTask currentTask = currentProject.tasks.GetValueOrDefault(taskId);
+                        ProjectTask currentTask = GetProjectTask(words, currentProject, "\nInvalid finsih command.\nUsage: finish [task-id]\n");
+                        if (currentTask == null) { break; }                                            
                         currentProject.checkLength(currentTask.name, true);
                         currentTask.status = true;
-
-                        Console.WriteLine($"\nTask {taskId} has been marked as complete\n");
+                        Console.WriteLine($"\nTask {currentTask.id} has been marked as complete\n");
                         break;
-                    }
-                   
+                    }                  
                 case "unfinish":
                     {
-                        if (words.Length != 2)
-                        {
-                            Console.WriteLine("\nInvalid unfinsih command.\nUsage: unfinish [task-id]\n");
-                            break;
-                        }
-
-                        int taskId = -1;
-                        try
-                        {
-                            taskId = Int32.Parse(words[1]);
-                        }
-                        catch (System.FormatException e)
-                        {
-                            Console.WriteLine("\nInvalid unfinsih command.\nUsage: unfinish [task-id]\n");
-                            break;
-                        }
-
-                        if (!(currentProject.tasks.ContainsKey(taskId)))
-                        {
-                            Console.WriteLine($"\nNo task with id {taskId}\n");
-                            break;
-                        }
-
-                        ProjectTask currentTask = currentProject.tasks.GetValueOrDefault(taskId);
+                        ProjectTask currentTask = GetProjectTask(words, currentProject, "\nInvalid finsih command.\nUsage: unfinish [task-id]\n");
+                        if (currentTask == null) { break; }                       
                         currentProject.checkLength(currentTask.name, false);
                         currentTask.status = false;
-
-                        Console.WriteLine($"\nTask {taskId} has been marked as incomplete\n");
+                        Console.WriteLine($"\nTask {currentTask.id} has been marked as incomplete\n");
                         break;
                     }
                 case "del":
                     {
-                        if (words.Length != 2)
-                        {
-                            Console.WriteLine("\nInvalid del command.\nUsage: del [task-id]\n");
-                            break;
-                        }
-
-                        int taskId = -1;
-                        try
-                        {
-                            taskId = Int32.Parse(words[1]);
-                        }
-                        catch (System.FormatException e)
-                        {
-                            Console.WriteLine("\nInvalid del command.\nUsage: del [task-id]\n");
-                            break;
-                        }
-
-                        if (!(currentProject.tasks.ContainsKey(taskId)))
-                        {
-                            Console.WriteLine($"\nNo task with id {taskId}\n");
-                            break;
-                        }
-
-                        Console.Write($"Are you sure you wish to delete task {taskId}? (y/n): ");
-                        string deleteResponse = Console.ReadLine();
-                        if (deleteResponse == null)
-                        {
-                            Environment.Exit(0);
-                            break;
-                        }
-
-                        deleteResponse = deleteResponse.ToLower().Trim();
-                        while (!(deleteResponse == null) && !deleteResponse.Equals("y") && !deleteResponse.Equals("yes") && !deleteResponse.Equals("n") && !deleteResponse.Equals("no"))
-                        {
-                            deleteResponse = deleteResponse.ToLower().Trim();
-                            Console.WriteLine("Invalid input");
-                            Console.Write($"Are you sure you wish to delete task {taskId}? (y/n): ");
-                            deleteResponse = Console.ReadLine();
-                        }
-
-                        if (deleteResponse == null)
-                        {
-                            Environment.Exit(0);
-                            break;
-                        }
-
+                        ProjectTask currentTask = GetProjectTask(words, currentProject, "\nInvalid del command.\nUsage: del [task-id]\n");
+                        if (currentTask == null) { break;}
+                        string deleteResponse = GetDeleteResponse($"Are you sure you wish to delete task {currentTask.id}? (y/n): ");                      
                         if (deleteResponse.Contains("y"))
                         {
                             //no current accomodation to adjust if it is the max project name
-                            currentProject.tasks.Remove(taskId);
-                            Console.WriteLine($"\nTask {taskId} has been deleted\n");
+                            currentProject.tasks.Remove(currentTask.id);
+                            Console.WriteLine($"\nTask {currentTask.id} has been deleted\n");
                         }
                         break;
                     }
                 case "new":
                     {
-                        string taskName = "";
-                        for (int i = 1; i < words.Length; i++)
-                        {
-                            taskName += words[i];
-                            if (i != words.Length - 1)
-                            {
-                                taskName += " ";
-                            }
-                        }
-
+                        string taskName = GetCombinedName(words, 1);
                         if (taskName.Equals(""))
                         {
-                            Console.WriteLine("\nNo project specified. Usage: new [task-name]\n");
+                            Console.WriteLine("\nNo task specified. Usage: new [task-name]\n");
                         }
                         else
                         {
-
-
-                            Console.WriteLine("Task description (Optional. Double enter to skip):");
-
-                            string newDescription = "";
-                            newDescription = Console.ReadLine();
-                            if (newDescription == null)
-                            {
-                                Environment.Exit(0);
-                            }
-                            newDescription = newDescription + "\n";
-                            // keep reading request until a double line brake is detected
-
-                            while (!newDescription.Contains("\n\n"))
-                            {
-                                string nextLine = Console.ReadLine();
-                                if (nextLine == null)
-                                {
-                                    Environment.Exit(0);
-                                }
-                                newDescription = newDescription + nextLine + "\n";
-                            }
-
-
-                            newDescription = newDescription.Trim();
-
+                            Console.WriteLine("Task description (Optional. Double enter to skip):\n");
+                            string newDescription = GetMultiLineInput();
                             if (newDescription == "") { newDescription = "None"; }
-
-
                             string newDueDate = getValidDate();
-
                             currentProject.taskCount++;
-                            ProjectTask newTask = new ProjectTask(currentProject.taskCount, currentProject.name, taskName, false, newDescription, newDueDate);
-
-        
+                            ProjectTask newTask = new ProjectTask(currentProject.taskCount, currentProject.name, taskName, false, newDescription, newDueDate);        
                             currentProject.tasks.Add(newTask.id, newTask);
                             currentProject.checkLength(newTask.name, newTask.status);
-
                             Console.WriteLine($"\nTask \"{newTask.name}\" has been created with id {newTask.id}!\n");
 
                         }
-
                         break;
                     }
                 case "edit":
@@ -843,7 +512,6 @@ class ProjectTrackerApplication
                             Console.WriteLine("Invalid edit command\n\nUsage:\nedit name [task-id]\nedit date [task-id]\n");
                             break;
                         }
-
                         int taskId = -1;
                         try
                         {
@@ -861,12 +529,10 @@ class ProjectTrackerApplication
                             break;
                         }
                         ProjectTask currentTask = currentProject.tasks.GetValueOrDefault(taskId);
-
                         if (words[1] == "date")
                         {
                             string newDueDate = getValidDate();
                             currentTask.dueDate = newDueDate;
-
                             Console.WriteLine($"\nDate for task {taskId} has been updated to {newDueDate}\n");
                         }
                         else
@@ -874,25 +540,15 @@ class ProjectTrackerApplication
                             string newName = "";
                             Console.Write($"New name for task {taskId}: ");
                             newName = Console.ReadLine();
-
-                            if (newName == null)
-                            {
-                                Environment.Exit(0);
-                            }
-
+                            NullCleanTerminator(newName);
                             while (newName == "")
                             {
                                 Console.WriteLine("Task name cannot be empty\n");
                                 Console.Write($"New name for task {taskId}: ");
                                 newName = Console.ReadLine();
 
-                                if (newName == null)
-                                {
-                                    Environment.Exit(0);
-                                }
-                            }
-
-                            
+                                NullCleanTerminator(newName);
+                            }                          
                             currentTask.name = newName;
                             currentProject.checkLength(newName, currentTask.status);
 
@@ -902,31 +558,9 @@ class ProjectTrackerApplication
                     }
                 case "view":
                     {
-                        if (words.Length != 2)
-                        {
-                            Console.WriteLine("\nInvalid view command.\nUsage: view [task-id]\n");
-                            break;
-                        }
-
-                        int taskId = -1;
-                        try
-                        {
-                            taskId = Int32.Parse(words[1]);
-                        }
-                        catch (System.FormatException e)
-                        {
-                            Console.WriteLine("\nInvalid view command.\nUsage: view [task-id]\n");
-                            break;
-                        }
-
-                        if (!(currentProject.tasks.ContainsKey(taskId)))
-                        {
-                            Console.WriteLine($"\nNo task with id {taskId}\n");
-                            break;
-                        }
-
-                        ProjectTask currentTask = currentProject.tasks.GetValueOrDefault(taskId);
-                        Console.WriteLine("\nTask Id #: " + taskId + "\n");
+                        ProjectTask currentTask = GetProjectTask(words, currentProject, "\nInvalid view command.\nUsage: view [task-id]\n");
+                        if (currentTask == null) { break;}
+                        Console.WriteLine("\nTask Id #: " + currentTask + "\n");
                         Console.WriteLine("Task: " + currentTask.name);
                         Console.WriteLine("Description:\n");
                         string[] descriptionLines = currentTask.description.Split("\n");
@@ -939,9 +573,7 @@ class ProjectTrackerApplication
                         string status = currentTask.status ? "Complete" : "Incomplete";
                         Console.WriteLine("Status: " + status);
                         Console.WriteLine("Due-Date: " + currentTask.dueDate + " " + isLate(currentTask.status, currentTask.dueDate));
-
                         Console.WriteLine("\nNotes:\n");
-
                         if (currentTask.notes.Count == 0)
                         {
                             Console.WriteLine("   none\n");
@@ -969,61 +601,17 @@ class ProjectTrackerApplication
 
                             }
                             
-                        }
-
-                        
+                        }                       
                         break;
                     }
                 case "note":
                     {
-                        if (words.Length != 2)
-                        {
-                            Console.WriteLine("\nInvalid view command.\nUsage: view [task-id]\n");
-                            break;
-                        }
-
-                        int taskId = -1;
-                        try
-                        {
-                            taskId = Int32.Parse(words[1]);
-                        }
-                        catch (System.FormatException e)
-                        {
-                            Console.WriteLine("\nInvalid view command.\nUsage: view [task-id]\n");
-                            break;
-                        }
-
-                        if (!(currentProject.tasks.ContainsKey(taskId)))
-                        {
-                            Console.WriteLine($"\nNo task with id {taskId}\n");
-                            break;
-                        }
-
-                        ProjectTask currentTask = currentProject.tasks.GetValueOrDefault(taskId);
+                        ProjectTask currentTask = GetProjectTask(words, currentProject, "\nInvalid view command.\nUsage: view [task-id]\n");
+                        if (currentTask == null) { break; }
 
                         Console.WriteLine("\nNew Note (Double enter to confirm):\n");
 
-                        string note = "";
-
-                        note = Console.ReadLine();
-                        if (note == null)
-                        {
-                            Environment.Exit(0);
-                        }
-                        note = note + "\n";
-                        // keep reading request until a double line brake is detected
-                        
-                        while (!note.Contains("\n\n"))
-                        {
-                            string nextLine = Console.ReadLine();
-                            if (nextLine == null)
-                            {
-                                Environment.Exit(0);
-                            }
-                            note = note + nextLine + "\n";
-                        }
-
-                        note = note.Trim();
+                        string note = GetMultiLineInput();
                         if (note == "")
                         {
                             Console.WriteLine("Note cannot be empty\n");
@@ -1031,12 +619,9 @@ class ProjectTrackerApplication
                         else
                         {
                             currentTask.notes.Add(note);
-                            Console.WriteLine("Note has been added to task " + taskId + "\n");
-                        }
-                        
+                            Console.WriteLine("Note has been added to task " + currentTask.id + "\n");
+                        }                     
                         break;
-
-
                     }
                 case "quit":
                     Environment.Exit(0);
@@ -1055,8 +640,6 @@ class ProjectTrackerApplication
         Console.WriteLine(message);
         Environment.Exit(code);
     }
-
-    
 
     public void displayHomeMenu()
     {
@@ -1082,8 +665,6 @@ class ProjectTrackerApplication
         Console.WriteLine("| enter [project-name]         | Enters the specified project              |");
         Console.WriteLine("| quit                         | Quits                                     |");
         Console.WriteLine("|______________________________|___________________________________________|\n");
-
-
     }
 
     public void displayTaskMenu()
@@ -1113,9 +694,6 @@ class ProjectTrackerApplication
         Console.WriteLine("| exit                         | Exits the current project                 |");
         Console.WriteLine("| quit                         | Quits                                     |");
         Console.WriteLine("|______________________________|___________________________________________|\n");
-
-
-       
 
     }
 
@@ -1185,17 +763,14 @@ class ProjectTrackerApplication
         }
 
     }
-
     public void saveData()
-    {
-        
+    {     
         var jsonBuilder = new StringBuilder();
         jsonBuilder.AppendLine("[");
         Dictionary<string, Project>.Enumerator projectEnum = projects.GetEnumerator();
         projectEnum.MoveNext();
         for (int i = 0; i < projects.Count; i++)
         {
-
             Project myProject = projectEnum.Current.Value;
             
             Dictionary<int, ProjectTask> tasks = myProject.tasks;
@@ -1217,7 +792,6 @@ class ProjectTrackerApplication
             jsonBuilder.AppendLine($"    \"dueDate\": \"{myProject.dueDate}\",");
             jsonBuilder.AppendLine($"    \"taskCount\": {myProject.taskCount},");
             jsonBuilder.AppendLine($"    \"tasks\": [");
-
             Dictionary<int, ProjectTask>.Enumerator taskEnum = myProject.tasks.GetEnumerator();
             taskEnum.MoveNext();
             for (int j = 0; j < myProject.tasks.Count; j++)
@@ -1228,10 +802,19 @@ class ProjectTrackerApplication
                 jsonBuilder.AppendLine($"        \"projectName\": \"{myProject.name}\",");
                 jsonBuilder.AppendLine($"        \"status\": {myTask.status.ToString().ToLower()},");
                 jsonBuilder.AppendLine($"        \"name\": \"{myTask.name}\",");
-                jsonBuilder.AppendLine($"        \"description\": \"{myTask.description}\",");
+                jsonBuilder.Append($"        \"description\": \"");
+                string[] taskDescriptionLines = myTask.description.Split("\n");
+                for (int k = 0; k < taskDescriptionLines.Length; k++)
+                {
+                    jsonBuilder.Append(taskDescriptionLines[k]);
+                    if (k != taskDescriptionLines.Length - 1)
+                    {
+                        jsonBuilder.Append("\\n");
+                    }
+                }
+                jsonBuilder.AppendLine("\",");
                 jsonBuilder.AppendLine($"        \"dueDate\": \"{myTask.dueDate}\",");
-                jsonBuilder.AppendLine("        \"notes\": [");
-                
+                jsonBuilder.AppendLine("        \"notes\": [");            
                 for (int k = 0; k < myTask.notes.Count; k++)
                 {
                     string[] notesLines = myTask.notes[k].Split("\n");
@@ -1255,7 +838,6 @@ class ProjectTrackerApplication
                     }
                 }
                 jsonBuilder.AppendLine("        ]");
-
                 if (j == myProject.tasks.Count - 1)
                 {
                     jsonBuilder.AppendLine("      }");
@@ -1264,13 +846,9 @@ class ProjectTrackerApplication
                 {
                     jsonBuilder.AppendLine("      },");
                 }
-
-
                 taskEnum.MoveNext();
             }
-
             jsonBuilder.AppendLine("    ]");
-
             if (i == projects.Count - 1)
             {
                 jsonBuilder.AppendLine("   }");
@@ -1279,16 +857,11 @@ class ProjectTrackerApplication
             {
                 jsonBuilder.AppendLine("   },");
             }
-
             projectEnum.MoveNext();
         }
-
         jsonBuilder.AppendLine("]");
-
         string jsonString = jsonBuilder.ToString();
-
-        File.WriteAllText("../../../ProjectData.json", jsonString);
-        
+        File.WriteAllText("../../../ProjectData.json", jsonString);     
         Console.WriteLine("Data saved successfully");
     }
 
@@ -1304,8 +877,7 @@ class ProjectTrackerApplication
         if (all)
         {
            result += String.Format("{0} {1} {2}", "\nName".PadRight(maxProjectLength + 3), "Status".PadRight(11), "Due-Date\n".PadRight(0));
-        }
-        
+        }       
         else if (active)
         {
             result += String.Format("{0} {1} {2}", "\nName".PadRight(maxActiveProjectLength + 3), "Status".PadRight(9), "Due-Date\n".PadRight(0));
@@ -1313,8 +885,7 @@ class ProjectTrackerApplication
         else
         {
             result += String.Format("{0} {1} {2}", "\nName".PadRight(maxInactiveProjectLength + 3), "Status".PadRight(11), "Due-Date\n".PadRight(0));
-        }
-        
+        }       
         Console.WriteLine(result);
      }
 
@@ -1326,7 +897,6 @@ class ProjectTrackerApplication
         {
             result += String.Format("{0} {1} {2} {3}", "\nID#".PadRight(5), "Name".PadRight(current.maxTaskLength + 2), "Status".PadRight(11), "Due-Date\n".PadRight(0));
         }
-
         else if (active)
         {
             result += String.Format("{0} {1} {2} {3}", "\nID#".PadRight(5), "Name".PadRight(current.maxActiveTaskLength + 2), "Status".PadRight(9), "Due-Date\n".PadRight(0));
@@ -1345,12 +915,10 @@ class ProjectTrackerApplication
         {
             maxProjectLength = name.Length;
         }
-
         if (status && name.Length > maxActiveProjectLength)
         {
             maxActiveProjectLength = name.Length;
         }
-
         if (!status && name.Length > maxInactiveProjectLength)
         {
             maxInactiveProjectLength = name.Length;
@@ -1362,24 +930,14 @@ class ProjectTrackerApplication
         return projects.ContainsKey(name);
     }
 
-    /*
-     * promts user until date is valid or ""
-     */
     public string getValidDate()
     {
         bool validDate = false;
         string[] formats = { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy" };
         Console.Write("Project due-date mm/dd/yyyy (Optional. Enter to skip): ");
-  
         string newDueDate = Console.ReadLine();
-
-        if (newDueDate == null)
-        {
-            Environment.Exit(0);
-        }
-
+        NullCleanTerminator(newDueDate);
         newDueDate = newDueDate.Trim();
-
         if (!newDueDate.Equals(""))
         {
             try
@@ -1399,17 +957,13 @@ class ProjectTrackerApplication
                 Console.WriteLine("Invalid date");
             }
         }
-
         while (!newDueDate.Equals("") && !validDate)
         {
             
             Console.Write("Project due-date mm/dd/yyyy (Optional. Enter to skip): ");
             newDueDate = Console.ReadLine();
 
-            if (newDueDate == null)
-            {
-                Environment.Exit(0);
-            }
+            NullCleanTerminator(newDueDate);
 
             newDueDate = newDueDate.Trim();
             try
@@ -1429,7 +983,6 @@ class ProjectTrackerApplication
                 Console.WriteLine("Invalid date");
             }
         }
-
         if (newDueDate.Equals(""))
         {
             return "None";
@@ -1438,7 +991,6 @@ class ProjectTrackerApplication
         {
             return newDueDate;
         }
-        
     }
 
     public string isLate(bool finished, string date)
@@ -1448,7 +1000,6 @@ class ProjectTrackerApplication
             return "";
         }
         string[] formats = { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy" };
-
         try
         {
             var dateTime = DateTime.ParseExact(date, formats, new CultureInfo("en-US"), DateTimeStyles.None);
@@ -1489,5 +1040,105 @@ class ProjectTrackerApplication
         Console.WriteLine($"   Incomplete: { p.numIncomplete()}\n");
 
     }
-}
 
+    public string getCommandInput(bool inHomeMenu, string projectName)
+    {
+        string response = "";
+        while (response != null && response.Equals(""))
+        {
+            if (!inHomeMenu) { Console.Write(projectName); }
+            Console.Write(">>> ");
+            response = Console.ReadLine();
+
+        }
+        NullCleanTerminator(response);
+        return response.Trim();
+    }
+
+    public string GetCombinedName(string[] words, int projectNameStart)
+    {
+        string projectName = "";
+        for (int i = projectNameStart; i < words.Length; i++)
+        {
+            projectName += words[i];
+            if (i != words.Length - 1)
+            {
+                projectName += " ";
+            }
+        }
+
+        return projectName;
+    }
+
+    public ProjectTask GetProjectTask(string[] words, Project currentProject, string errorMessage)
+    {
+        if (words.Length != 2)
+        {
+            Console.WriteLine(errorMessage);
+            return null;
+        }
+
+        int taskId = -1;
+        try
+        {
+            taskId = Int32.Parse(words[1]);
+        }
+        catch (System.FormatException e)
+        {
+            Console.WriteLine(errorMessage);
+            return null;
+        }
+
+        if (!(currentProject.tasks.ContainsKey(taskId)))
+        {
+            Console.WriteLine($"\nNo task with id {taskId}\n");
+            return null;
+        }
+        return currentProject.tasks.GetValueOrDefault(taskId);
+    }
+
+    public string GetMultiLineInput()
+    {
+        string newDescription = "";
+        newDescription = Console.ReadLine();
+        NullCleanTerminator(newDescription);
+        newDescription = newDescription + "\n";
+        // keep reading request until a double line brake is detected
+
+        while (!newDescription.Contains("\n\n"))
+        {
+            string nextLine = Console.ReadLine();
+            NullCleanTerminator(nextLine);
+            newDescription = newDescription + nextLine + "\n";
+        }
+
+        newDescription = newDescription.Trim();
+        return newDescription;
+    }
+
+    public string GetDeleteResponse(string prompt)
+    {
+        Console.Write(prompt);
+        string deleteResponse = Console.ReadLine();
+        NullCleanTerminator(deleteResponse);
+
+        deleteResponse = deleteResponse.ToLower().Trim();
+        while (!(deleteResponse == null) && !deleteResponse.Equals("y") && !deleteResponse.Equals("yes") && !deleteResponse.Equals("n") && !deleteResponse.Equals("no"))
+        {
+            deleteResponse = deleteResponse.ToLower().Trim();
+            Console.WriteLine("Invalid input");
+            Console.Write(prompt);
+            deleteResponse = Console.ReadLine();
+        }
+        NullCleanTerminator(deleteResponse);
+        return deleteResponse;
+    }
+
+    public void NullCleanTerminator(Object o)
+    {
+        if (o == null)
+        {
+            Environment.Exit(0);
+        }
+    }
+}
